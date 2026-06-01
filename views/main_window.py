@@ -112,6 +112,7 @@ class MainWindow(ctk.CTk):
         from views.results_view import ResultsView
         from views.special_view import SpecialView
         from views.tickets_view import TicketsView
+        from views.reimport_view import ReImportView
 
         view_map = {
             "dashboard":    DashboardView,
@@ -122,6 +123,7 @@ class MainWindow(ctk.CTk):
             "results":      ResultsView,
             "special":      SpecialView,
             "tickets":      TicketsView,
+            "import":       ReImportView,
         }
         cls = view_map.get(key)
         return cls(self._content) if cls else None
