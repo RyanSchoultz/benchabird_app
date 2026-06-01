@@ -7,6 +7,7 @@ import sys
 from services.ticket_service import get_ticket_assignments
 from services.ticket_pdf_service import generate_ticket_pdf
 from models.reference import ShowDetails
+from views._paginated_table import PaginatedTable
 
 
 class TicketsView(ctk.CTkFrame):
@@ -34,31 +35,27 @@ class TicketsView(ctk.CTkFrame):
                                     text_color=("gray40", "gray60"))
         self._status.pack(side="left", padx=12)
 
-        table = ctk.CTkScrollableFrame(self, fg_color=("gray92", "gray16"))
-        table.grid(row=1, column=0, sticky="nsew", padx=16, pady=(0, 16))
-        for col_i, hdr in enumerate(["Ticket #", "AutoNum", "ExhNo", "Name", "Class"]):
-            table.grid_columnconfigure(col_i, weight=1)
-            ctk.CTkLabel(table, text=hdr, font=ctk.CTkFont(weight="bold"),
-                         fg_color=("gray82", "gray22")).grid(
-                row=0, column=col_i, sticky="ew", padx=2, pady=(0, 2)
-            )
+        self._table = PaginatedTable(
+            self,
+            headers=["Ticket #", "AutoNum", "ExhNo", "Name", "Class"],
+            selectable=False,
+        )
+        self._table.grid(row=1, column=0, sticky="nsew", padx=16, pady=(0, 16))
 
         tickets = get_ticket_assignments()
-        for row_i, t in enumerate(tickets, start=1):
-            bg = ("gray88", "gray18") if row_i % 2 == 0 else ("gray92", "gray16")
-            vals = [str(t['ticket_no']), str(t['auto_num']), str(t['exh_no'] or ""),
-                    t['name'] or "", t['class_code'] or ""]
-            for col_i, val in enumerate(vals):
-                ctk.CTkLabel(table, text=val, fg_color=bg, anchor="w",
-                             font=ctk.CTkFont(size=12)).grid(
-                    row=row_i, column=col_i, sticky="ew", padx=2, pady=1
-                )
-
-        if not tickets:
-            ctk.CTkLabel(table, text="Run Calculate first to generate tickets.",
-                         text_color=("gray50", "gray55")).grid(
-                row=1, column=0, columnspan=5, pady=20
-            )
+        if tickets:
+            data = [
+                (t['ticket_no'], [
+                    str(t['ticket_no']), str(t['auto_num']),
+                    str(t['exh_no'] or ""), t['name'] or "", t['class_code'] or "",
+                ])
+                for t in tickets
+            ]
+            self._table.load(data)
+            self._status.configure(text=f"{len(data)} tickets")
+        else:
+            self._table.load([])
+            self._status.configure(text="Run Calculate first to generate tickets.")
 
     def _start_print(self):
         tickets = get_ticket_assignments()
@@ -94,7 +91,6 @@ class TicketsView(ctk.CTkFrame):
     def _on_done(self, path: str):
         self._print_btn.configure(state="normal", text="Print All Tickets")
         self._status.configure(text=f"Saved: {path}")
-        # Open the PDF automatically
         if sys.platform == "win32":
             subprocess.Popen(["start", "", path], shell=True)
 
