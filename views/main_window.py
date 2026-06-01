@@ -15,6 +15,7 @@ NAV = [
     ("Reports",         "reports"),
     ("Hall of Fame",    "hall_of_fame"),
     ("Notes",           "notes"),
+    ("Help",            "help"),
 ]
 
 ADMIN_NAV = [
@@ -123,6 +124,7 @@ class MainWindow(ctk.CTk):
         from views.notes_view import NotesView
         from views.reimport_view import ReImportView
         from views.reset_view import ResetView
+        from views.help_view import HelpView
 
         view_map = {
             "dashboard":    DashboardView,
@@ -137,6 +139,7 @@ class MainWindow(ctk.CTk):
             "reports":      ReportsView,
             "hall_of_fame": HallOfFameView,
             "notes":        NotesView,
+            "help":         HelpView,
             "import":       ReImportView,
             "reset":        ResetView,
         }

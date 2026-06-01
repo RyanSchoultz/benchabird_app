@@ -1,9 +1,6 @@
 # views/reports_view.py
 import threading
-import subprocess
-import sys
 import customtkinter as ctk
-from tkinter import filedialog
 from models.reference import ShowDetails
 
 
@@ -53,32 +50,23 @@ class ReportsView(ctk.CTkFrame):
         return ShowDetails.select().first()
 
     def _save_and_open(self, gen_fn, default_name: str):
-        path = filedialog.asksaveasfilename(
-            defaultextension=".pdf",
-            filetypes=[("PDF files", "*.pdf")],
-            initialfile=default_name,
-            title="Save PDF Report",
-        )
-        if not path:
-            return
-        sd = self._get_sd()
         self._status.configure(text=f"Generating {default_name}…")
+        sd = self._get_sd()
 
         def run():
             try:
                 pdf_bytes = gen_fn(sd=sd)
-                with open(path, "wb") as f:
-                    f.write(pdf_bytes)
-                self.after(0, lambda: self._on_done(path))
+                self.after(0, lambda: self._show_preview(pdf_bytes, default_name))
             except Exception as e:
                 self.after(0, lambda: self._on_error(str(e)))
 
         threading.Thread(target=run, daemon=True).start()
 
-    def _on_done(self, path: str):
-        self._status.configure(text=f"Saved: {path}")
-        if sys.platform == "win32":
-            subprocess.Popen(["start", "", path], shell=True)
+    def _show_preview(self, pdf_bytes: bytes, default_name: str):
+        self._status.configure(text="")
+        from views.pdf_preview_window import PDFPreviewWindow
+        title = default_name.replace("benchabird_", "").replace(".pdf", "").replace("_", " ").title()
+        PDFPreviewWindow(self, pdf_bytes, title, default_name)
 
     def _on_error(self, msg: str):
         self._status.configure(text=f"Error: {msg[:80]}")
