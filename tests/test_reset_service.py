@@ -33,6 +33,7 @@ def test_reset_returns_counts(test_db):
     counts = reset_show_data()
     assert counts['entries'] == 1
     assert counts['results'] == 1
+    assert set(counts.keys()) == {'entries', 'calculated', 'late_entries', 'results', 'not_benched', 'special_winners'}
 
 
 def test_reset_on_empty_db_is_noop(test_db):

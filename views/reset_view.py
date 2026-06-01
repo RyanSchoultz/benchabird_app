@@ -59,7 +59,11 @@ class ResetView(ctk.CTkFrame):
             icon="warning",
         ):
             return
-        counts = reset_show_data()
+        try:
+            counts = reset_show_data()
+        except Exception as exc:
+            messagebox.showerror("Reset Failed", str(exc))
+            return
         total = sum(counts.values())
         self._msg.configure(
             text=f"Reset complete — {total} records removed. "
