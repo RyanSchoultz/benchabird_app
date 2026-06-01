@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.db
+dist/
+build/
+*.spec.bak
+.pytest_cache/
