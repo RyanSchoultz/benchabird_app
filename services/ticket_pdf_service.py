@@ -11,6 +11,23 @@ ROWS_PER_PAGE = 7
 MARGIN = 10 * mm
 
 
+def _make_qr_reader(exh_no, class_code):
+    """Generate a QR code image reader for ReportLab embedding."""
+    import qrcode
+    from qrcode.image.pil import PilImage
+    from reportlab.lib.utils import ImageReader
+    import io as _io
+    data = f"ExhNo:{exh_no} Class:{class_code or ''}"
+    qr = qrcode.QRCode(box_size=3, border=2, error_correction=qrcode.constants.ERROR_CORRECT_L)
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(image_factory=PilImage, fill_color="black", back_color="white")
+    buf = _io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    return ImageReader(buf)
+
+
 def generate_ticket_pdf(tickets: list, show_name: str = "Bird Show") -> bytes:
     """
     Generate an A4 PDF of cage tickets.
@@ -57,8 +74,17 @@ def _draw_ticket(c, x: float, y: float, w: float, h: float,
                  ticket: dict, show_name: str) -> None:
     """Draw a single ticket at (x, y) with dimensions (w, h)."""
     pad = 3 * mm
+    qr_size = 19 * mm
 
     c.rect(x, y, w, h)
+
+    # QR code — top-right corner
+    try:
+        qr_img = _make_qr_reader(ticket['exh_no'], ticket['class_code'])
+        c.drawImage(qr_img, x + w - qr_size - pad, y + h - qr_size - pad,
+                    width=qr_size, height=qr_size, mask='auto')
+    except Exception:
+        pass  # QR generation failed — degrade gracefully
 
     # Exhibit number — large and prominent
     c.setFont("Helvetica-Bold", 20)

@@ -12,6 +12,7 @@ class ShowDetails(BaseModel):
     club_eng = CharField(max_length=50, null=True)
     club_eng_full = CharField(max_length=50, null=True)
     association = CharField(max_length=50, null=True)
+    logo_path = CharField(max_length=500, null=True)
 
     class Meta:
         table_name = 'show_details'

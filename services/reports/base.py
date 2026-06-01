@@ -19,7 +19,7 @@ def new_canvas() -> tuple:
 
 def draw_page_header(c: canvas.Canvas, title: str, sd=None) -> float:
     """
-    Draw show name (left) and report title (right) at top of page.
+    Draw show name/logo (left) and report title (right) at top of page.
     Returns the y coordinate of the content start line (below the rule).
     """
     show_name = ""
@@ -29,8 +29,30 @@ def draw_page_header(c: canvas.Canvas, title: str, sd=None) -> float:
         parts = [p for p in [sd.date_eng, sd.club_eng_full] if p]
         date_club = "  |  ".join(parts)
 
-    c.setFont("Helvetica-Bold", 13)
-    c.drawString(MARGIN, TOP_Y, show_name)
+    # Logo or show-name text at top-left
+    logo_drawn = False
+    if sd and getattr(sd, 'logo_path', None):
+        from pathlib import Path as _Path
+        from reportlab.lib.utils import ImageReader
+        logo_file = _Path(sd.logo_path)
+        if logo_file.exists():
+            try:
+                logo_w = 35 * mm
+                logo_h = 18 * mm
+                c.drawImage(
+                    ImageReader(str(logo_file)),
+                    MARGIN, TOP_Y - logo_h,
+                    width=logo_w, height=logo_h,
+                    preserveAspectRatio=True, mask='auto',
+                )
+                logo_drawn = True
+            except Exception:
+                pass
+
+    if not logo_drawn:
+        c.setFont("Helvetica-Bold", 13)
+        c.drawString(MARGIN, TOP_Y, show_name)
+
     c.setFont("Helvetica", 11)
     c.drawRightString(PAGE_W - MARGIN, TOP_Y, title)
 

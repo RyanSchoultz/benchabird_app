@@ -1,5 +1,7 @@
 # views/setup_view.py
 import customtkinter as ctk
+from tkinter import filedialog
+from pathlib import Path
 from models.reference import ShowDetails
 
 FIELDS = [
@@ -41,6 +43,26 @@ class SetupView(ctk.CTkFrame):
             row=2, column=0, pady=16, padx=30, sticky="w"
         )
 
+        logo_frame = ctk.CTkFrame(self, fg_color="transparent")
+        logo_frame.grid(row=3, column=0, sticky="w", padx=30, pady=(0, 16))
+
+        ctk.CTkLabel(logo_frame, text="Club Logo:",
+                     font=ctk.CTkFont(size=12)).pack(side="left", padx=(0, 8))
+
+        self._logo_label = ctk.CTkLabel(
+            logo_frame, text="No logo set",
+            font=ctk.CTkFont(size=11),
+            text_color=("gray40", "gray60"),
+        )
+        self._logo_label.pack(side="left", padx=(0, 8))
+
+        ctk.CTkButton(logo_frame, text="Browse…", width=90,
+                      command=self._browse_logo).pack(side="left", padx=(0, 4))
+        ctk.CTkButton(logo_frame, text="Clear", width=70,
+                      fg_color="transparent", border_width=1,
+                      text_color=("gray30", "gray70"),
+                      command=self._clear_logo).pack(side="left")
+
     def _load(self):
         sd = ShowDetails.select().first()
         if sd:
@@ -50,6 +72,30 @@ class SetupView(ctk.CTkFrame):
                 ent.delete(0, "end")
                 if val:
                     ent.insert(0, val)
+            if sd.logo_path:
+                self._logo_label.configure(text=Path(sd.logo_path).name)
+
+    def _browse_logo(self):
+        path = filedialog.askopenfilename(
+            title="Select Club Logo",
+            filetypes=[("Image files", "*.png *.jpg *.jpeg *.bmp"), ("All files", "*.*")],
+        )
+        if not path:
+            return
+        self._set_logo(path)
+
+    def _clear_logo(self):
+        self._set_logo(None)
+
+    def _set_logo(self, path):
+        sd = ShowDetails.select().first()
+        if sd:
+            sd.logo_path = path
+            sd.save()
+        elif path:
+            ShowDetails.create(logo_path=path)
+        label = Path(path).name if path else "No logo set"
+        self._logo_label.configure(text=label)
 
     def _save(self):
         data = {field: (self._entries[field].get().strip() or None) for field, _ in FIELDS}

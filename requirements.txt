@@ -3,5 +3,6 @@ peewee>=3.17.0
 pandas>=2.0.0
 pyodbc>=5.0.0
 reportlab>=4.0.0
+qrcode[pil]>=8.0.0
 pyinstaller>=6.0.0
 pytest>=8.0.0

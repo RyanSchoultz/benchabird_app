@@ -5,9 +5,18 @@ from models import ALL_MODELS
 from views.main_window import MainWindow
 from views.import_wizard import ImportWizard
 
+def _migrate_db():
+    try:
+        database.execute_sql(
+            "ALTER TABLE show_details ADD COLUMN logo_path VARCHAR(500)"
+        )
+    except Exception:
+        pass  # column already exists
+
 def init_db():
     database.connect(reuse_if_open=True)
     database.create_tables(ALL_MODELS, safe=True)
+    _migrate_db()
 
 def main():
     ctk.set_appearance_mode("dark")

@@ -23,6 +23,8 @@ a = Analysis(
         'reportlab.lib.pagesizes',
         'reportlab.lib.units',
         'reportlab.lib.colors',
+        'qrcode',
+        'qrcode.constants',
     ],
     hookspath=[],
     hooksconfig={},
