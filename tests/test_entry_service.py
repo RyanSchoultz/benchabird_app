@@ -19,3 +19,9 @@ def test_remove_entry(test_db):
     entry = add_entry(exh_no=1, class_code="SC01")
     remove_entry(entry.auto_num)
     assert ShowEntry.select().count() == 0
+
+def test_add_entry_duplicate_raises(test_db):
+    ClassDef.create(class_code="SC01", class_seq=10)
+    add_entry(exh_no=1, class_code="SC01")
+    with pytest.raises(EntryValidationError, match="already has an entry"):
+        add_entry(exh_no=1, class_code="SC01")

@@ -25,3 +25,27 @@ def get_winners_with_details() -> list:
             'cash':        sp.cash if sp else None,
         })
     return out
+
+
+def get_all_special_lists() -> list:
+    return list(SpecialList.select().order_by(
+        SpecialList.kind_sequence, SpecialList.special_nr
+    ))
+
+
+def save_special_list(
+    special_nr: str, description: str, prize: str, cash: int = None
+) -> SpecialList:
+    with SpecialList._meta.database.atomic():
+        sp, _ = SpecialList.get_or_create(special_nr=special_nr)
+        sp.description = description
+        sp.prize1 = prize
+        sp.cash = cash
+        sp.save()
+        return sp
+
+
+def delete_special_list(special_nr: str) -> None:
+    sp = SpecialList.get_or_none(SpecialList.special_nr == special_nr)
+    if sp:
+        sp.delete_instance()

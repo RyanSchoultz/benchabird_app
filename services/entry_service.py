@@ -14,6 +14,13 @@ class EntryValidationError(ValueError):
 def add_entry(exh_no: int, class_code: str) -> ShowEntry:
     if not ClassDef.get_or_none(ClassDef.class_code == class_code):
         raise EntryValidationError(f"Class code '{class_code}' not found in class schedule.")
+    existing = ShowEntry.get_or_none(
+        (ShowEntry.exh_no == exh_no) & (ShowEntry.class_code == class_code)
+    )
+    if existing:
+        raise EntryValidationError(
+            f"Exhibitor {exh_no} already has an entry for class {class_code}."
+        )
     next_num = _repo.next_auto_num()
     return _repo.add(next_num, exh_no, class_code)
 
