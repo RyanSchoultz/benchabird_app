@@ -1,6 +1,7 @@
 # views/entries_view.py
 import customtkinter as ctk
 from controllers.entry_ctrl import get_all_entries, get_calculated, run_calculate, delete_by_auto_num
+from views._paginated_table import PaginatedTable
 
 COLS_RAW = ["AutoNum", "ExhNo", "Class"]
 COLS_CALC = ["#", "ExhNo", "Name", "Class"]
@@ -11,7 +12,6 @@ class EntriesView(ctk.CTkFrame):
         super().__init__(parent, fg_color="transparent")
         self._mode = ctk.StringVar(value="raw")
         self._selected_auto_num = None
-        self._table_frame = None
         self._build()
         self._reload_table()
 
@@ -48,45 +48,35 @@ class EntriesView(ctk.CTkFrame):
                                     text_color=("gray40", "gray60"))
         self._status.pack(side="left", padx=12)
 
+        self._raw_table = PaginatedTable(
+            self, headers=COLS_RAW, on_select=self._select,
+        )
+        self._raw_table.grid(row=2, column=0, sticky="nsew", padx=16, pady=(4, 16))
+
+        self._calc_table = PaginatedTable(
+            self, headers=COLS_CALC, on_select=self._select,
+        )
+
     def _reload_table(self):
         self._selected_auto_num = None
-        if self._table_frame:
-            self._table_frame.destroy()
-
-        self._table_frame = ctk.CTkScrollableFrame(self, fg_color=("gray92", "gray16"))
-        self._table_frame.grid(row=2, column=0, sticky="nsew", padx=16, pady=(4, 16))
-
         if self._mode.get() == "calc":
             rows = get_calculated()
-            cols = COLS_CALC
-            data = [(r.auto_num, [str(r.auto_num), str(r.exh_no or ""), r.name or "", r.class_code or ""])
-                    for r in rows]
+            data = [
+                (r.auto_num, [str(r.auto_num), str(r.exh_no or ""), r.name or "", r.class_code or ""])
+                for r in rows
+            ]
+            self._raw_table.grid_remove()
+            self._calc_table.grid(row=2, column=0, sticky="nsew", padx=16, pady=(4, 16))
+            self._calc_table.load(data)
         else:
             rows = get_all_entries()
-            cols = COLS_RAW
-            data = [(r.auto_num, [str(r.auto_num), str(r.exh_no or ""), r.class_code or ""])
-                    for r in rows]
-
-        for col_i, col in enumerate(cols):
-            self._table_frame.grid_columnconfigure(col_i, weight=1)
-            ctk.CTkLabel(self._table_frame, text=col,
-                         font=ctk.CTkFont(weight="bold"),
-                         fg_color=("gray82", "gray22"), corner_radius=4).grid(
-                row=0, column=col_i, sticky="ew", padx=2, pady=(0, 2)
-            )
-
-        for row_i, (auto_num, row_vals) in enumerate(data, start=1):
-            bg = ("gray88", "gray18") if row_i % 2 == 0 else ("gray92", "gray16")
-            for col_i, val in enumerate(row_vals):
-                ctk.CTkButton(
-                    self._table_frame, text=val, anchor="w",
-                    fg_color=bg, text_color=("gray10", "gray90"),
-                    hover_color=("gray80", "gray25"),
-                    corner_radius=0, height=28,
-                    font=ctk.CTkFont(size=12),
-                    command=lambda an=auto_num: self._select(an),
-                ).grid(row=row_i, column=col_i, sticky="ew", padx=2, pady=1)
-
+            data = [
+                (r.auto_num, [str(r.auto_num), str(r.exh_no or ""), r.class_code or ""])
+                for r in rows
+            ]
+            self._calc_table.grid_remove()
+            self._raw_table.grid(row=2, column=0, sticky="nsew", padx=16, pady=(4, 16))
+            self._raw_table.load(data)
         self._status.configure(text=f"{len(data)} rows")
 
     def _select(self, auto_num: int):
