@@ -59,13 +59,17 @@ class NotesView(ctk.CTkFrame):
 
     def _select(self, rid: int):
         self._selected_id = rid
-        r = NotesBrochure.get_by_id(rid)
+        r = NotesBrochure.get_or_none(NotesBrochure.id == rid)
+        if r is None:
+            return
         self._text.delete("1.0", "end")
         self._text.insert("1.0", r.notes or "")
 
     def _save(self):
         if not self._selected_id:
             return
-        r = NotesBrochure.get_by_id(self._selected_id)
+        r = NotesBrochure.get_or_none(NotesBrochure.id == self._selected_id)
+        if r is None:
+            return
         r.notes = self._text.get("1.0", "end-1c")
         r.save()

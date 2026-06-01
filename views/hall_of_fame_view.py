@@ -1,6 +1,5 @@
 # views/hall_of_fame_view.py
 import customtkinter as ctk
-from models.reference import HallOfFame
 from views._paginated_table import PaginatedTable
 
 
@@ -10,6 +9,7 @@ class HallOfFameView(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent, fg_color="transparent")
         self._build()
+        self._load_data()
 
     def _build(self):
         self.grid_columnconfigure(0, weight=1)
@@ -27,13 +27,15 @@ class HallOfFameView(ctk.CTkFrame):
         )
         self._table.grid(row=1, column=0, sticky="nsew", padx=16, pady=(0, 16))
 
+    def _load_data(self):
+        from models.reference import HallOfFame
         records = list(
             HallOfFame.select().order_by(HallOfFame.year.desc(), HallOfFame.type_abbr)
         )
         data = [
             (r.id, [
                 r.type_abbr or "",
-                r.year or "",
+                str(r.year) if r.year is not None else "",
                 r.name or "",
                 r.class_name or "",
                 r.colour or "",

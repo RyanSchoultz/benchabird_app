@@ -57,7 +57,9 @@ class SpecialListDialog(ctk.CTkToplevel):
         sp = SpecialList.get_or_none(SpecialList.special_nr == special_nr)
         if not sp:
             return
+        self._nr_entry.configure(state="normal")
         self._nr_entry.insert(0, sp.special_nr or "")
+        self._nr_entry.configure(state="disabled")
         self._desc_entry.insert(0, sp.description or "")
         self._prize_entry.insert(0, sp.prize1 or "")
         if sp.cash is not None:
@@ -72,6 +74,16 @@ class SpecialListDialog(ctk.CTkToplevel):
         if not nr:
             self._msg.configure(text="Special Nr is required.")
             return
-        cash = int(raw_cash) if raw_cash.isdigit() else None
+        if raw_cash:
+            try:
+                cash = int(raw_cash)
+                if cash < 0:
+                    self._msg.configure(text="Cash amount must be 0 or greater.")
+                    return
+            except ValueError:
+                self._msg.configure(text="Cash Amount must be a whole number.")
+                return
+        else:
+            cash = None
         save_special_list(nr, desc, prize, cash)
         self.destroy()
