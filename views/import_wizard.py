@@ -80,7 +80,9 @@ class ImportWizard(ctk.CTkToplevel):
     def _do_import(self):
         try:
             from services.import_service import import_from_mdb
-            results = import_from_mdb(progress=lambda msg: self._progress_var.set(msg))
+            results = import_from_mdb(
+                progress=lambda msg: self.after(0, lambda m=msg: self._progress_var.set(m))
+            )
             total = sum(results.values())
             self.after(0, lambda: self._on_done(total))
         except Exception as e:
