@@ -41,12 +41,12 @@ class ImportWizard(ctk.CTkToplevel):
             text_color=("gray40", "gray60"),
         ).grid(row=2, column=0, pady=(0, 16))
 
-        self._progress_var = ctk.StringVar(value="")
-        ctk.CTkLabel(
-            self, textvariable=self._progress_var,
-            font=ctk.CTkFont(size=11),
-            text_color=("gray40", "gray60"),
-        ).grid(row=3, column=0, pady=(0, 8))
+        self._log = ctk.CTkTextbox(
+            self, state="disabled", height=100,
+            font=ctk.CTkFont(family="Courier New", size=11),
+            fg_color=("gray95", "gray10"),
+        )
+        self._log.grid(row=3, column=0, padx=20, sticky="ew", pady=(0, 8))
 
         self._bar = ctk.CTkProgressBar(self, mode="indeterminate")
         self._bar.grid(row=4, column=0, padx=40, sticky="ew", pady=(0, 16))
@@ -69,9 +69,15 @@ class ImportWizard(ctk.CTkToplevel):
             command=self.destroy,
         ).pack(side="left", padx=8)
 
+    def _log_append(self, msg: str):
+        self._log.configure(state="normal")
+        self._log.insert("end", msg + "\n")
+        self._log.configure(state="disabled")
+        self._log.see("end")
+
     def _start_import(self):
         if not MDB_PATH.exists():
-            self._progress_var.set(f"Error: MDB not found at {MDB_PATH}")
+            self._log_append(f"Error: MDB not found at {MDB_PATH}")
             return
         self._import_btn.configure(state="disabled")
         self._bar.start()
@@ -81,7 +87,7 @@ class ImportWizard(ctk.CTkToplevel):
         try:
             from services.import_service import import_from_mdb
             results = import_from_mdb(
-                progress=lambda msg: self.after(0, lambda m=msg: self._progress_var.set(m))
+                progress=lambda msg: self.after(0, lambda m=msg: self._log_append(m))
             )
             total = sum(results.values())
             self.after(0, lambda: self._on_done(total))
@@ -92,10 +98,10 @@ class ImportWizard(ctk.CTkToplevel):
         self._bar.stop()
         self._bar.configure(mode="determinate")
         self._bar.set(1.0)
-        self._progress_var.set(f"Import complete — {total} records loaded.")
+        self._log_append(f"\nImport complete — {total} records loaded.")
         self._import_btn.configure(text="Done", state="normal", command=self.destroy)
 
     def _on_error(self, msg: str):
         self._bar.stop()
-        self._progress_var.set(f"Error: {msg[:80]}")
+        self._log_append(f"\nError: {msg}")
         self._import_btn.configure(state="normal")

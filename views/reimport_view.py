@@ -72,15 +72,16 @@ class ReImportView(ctk.CTkFrame):
                 row=4, column=0, sticky="w", padx=16, pady=(0, 12)
             )
 
-        self._progress_var = ctk.StringVar(value="")
-        ctk.CTkLabel(self, textvariable=self._progress_var,
-                     font=ctk.CTkFont(size=11),
-                     text_color=("gray40", "gray60")).grid(
-            row=5, column=0, pady=(0, 4)
+        self.grid_rowconfigure(5, weight=1)
+        self._log = ctk.CTkTextbox(
+            self, state="disabled", height=180,
+            font=ctk.CTkFont(family="Courier New", size=11),
+            fg_color=("gray95", "gray10"),
         )
+        self._log.grid(row=5, column=0, sticky="nsew", padx=16, pady=(0, 8))
 
         self._bar = ctk.CTkProgressBar(self, mode="indeterminate")
-        self._bar.grid(row=6, column=0, padx=80, sticky="ew", pady=(0, 16))
+        self._bar.grid(row=6, column=0, padx=80, sticky="ew", pady=(0, 8))
         self._bar.stop()
         self._bar.set(0)
 
@@ -89,20 +90,29 @@ class ReImportView(ctk.CTkFrame):
             state="normal" if MDB_PATH.exists() else "disabled",
             command=self._start,
         )
-        self._btn.grid(row=7, column=0, pady=4)
+        self._btn.grid(row=7, column=0, pady=(0, 16))
+
+    def _log_append(self, msg: str):
+        self._log.configure(state="normal")
+        self._log.insert("end", msg + "\n")
+        self._log.configure(state="disabled")
+        self._log.see("end")
 
     def _start(self):
+        self._log.configure(state="normal")
+        self._log.delete("1.0", "end")
+        self._log.configure(state="disabled")
         self._btn.configure(state="disabled")
         self._bar.configure(mode="indeterminate")
         self._bar.start()
-        self._progress_var.set("Starting import...")
+        self._log_append("Starting import...")
         threading.Thread(target=self._run, daemon=True).start()
 
     def _run(self):
         try:
             from services.import_service import import_from_mdb
             results = import_from_mdb(
-                progress=lambda msg: self.after(0, lambda m=msg: self._progress_var.set(m))
+                progress=lambda msg: self.after(0, lambda m=msg: self._log_append(m))
             )
             total = sum(results.values())
             self.after(0, lambda: self._on_done(results, total))
@@ -115,8 +125,8 @@ class ReImportView(ctk.CTkFrame):
         self._bar.set(1.0)
         exhibitors = results.get('exhibitors', 0)
         entries = results.get('show_entries', 0)
-        self._progress_var.set(
-            f"Done — {total} records imported. "
+        self._log_append(
+            f"\nDone — {total} records imported. "
             f"Exhibitors: {exhibitors}, Entries: {entries}."
         )
         self._btn.configure(state="normal", text="Import Again")
@@ -124,5 +134,5 @@ class ReImportView(ctk.CTkFrame):
     def _on_error(self, msg: str):
         self._bar.stop()
         self._bar.set(0)
-        self._progress_var.set(f"Error: {msg[:80]}")
+        self._log_append(f"\nError: {msg}")
         self._btn.configure(state="normal")
