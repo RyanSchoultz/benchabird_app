@@ -170,7 +170,7 @@ def _special_winners(conn, cb) -> int:
     return _bulk(SpecialWinner, [{
         'special_nr': _n(r.get('Special Number')),
         'exhibit_no': _n(r.get('Exhibit Number')),
-        'result':     _n(r.get('"Result"')),
+        'result':     _n(r.get('Result')),
     } for r in rows])
 
 

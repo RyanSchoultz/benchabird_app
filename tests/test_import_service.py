@@ -23,6 +23,22 @@ def test_import_show_details(test_db):
     from services.import_service import import_from_mdb
     from models.reference import ShowDetails
     import_from_mdb()
-    sd = ShowDetails.get_by_id(1)
+    sd = ShowDetails.select().first()
     assert sd.show_eng == "Open Show"
     assert sd.club_eng_full == "Cape Town Bird Club"
+
+def test_import_is_idempotent(test_db):
+    from services.import_service import import_from_mdb
+    import_from_mdb()
+    results = import_from_mdb()
+    assert results['exhibitors'] == 199
+    assert results['show_entries'] == 559
+    from models.reference import ShowDetails
+    assert ShowDetails.select().count() == 1
+
+def test_import_progress_callback(test_db):
+    from services.import_service import import_from_mdb
+    messages = []
+    import_from_mdb(progress=messages.append)
+    assert len(messages) >= 13
+    assert any("exhibitor" in m.lower() for m in messages)
