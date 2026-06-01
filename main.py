@@ -1,7 +1,7 @@
 # benchabird_app/main.py
 import customtkinter as ctk
-from config import APP_NAME, DB_PATH
-from models.database import database, ALL_MODELS
+from models.database import database
+from models import ALL_MODELS
 from views.main_window import MainWindow
 from views.import_wizard import ImportWizard
 
