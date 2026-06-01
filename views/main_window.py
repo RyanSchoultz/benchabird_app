@@ -3,18 +3,22 @@ import customtkinter as ctk
 from config import APP_NAME, APP_VERSION
 
 NAV = [
-    ("Dashboard",      "dashboard"),
-    ("Show Setup",     "setup"),
-    ("Exhibitors",     "exhibitors"),
-    ("Entries",        "entries"),
-    ("Late Entries",   "late_entries"),
-    ("Results",        "results"),
-    ("Special Winners","special"),
-    ("Tickets",        "tickets"),
+    ("Dashboard",       "dashboard"),
+    ("Show Setup",      "setup"),
+    ("Exhibitors",      "exhibitors"),
+    ("Entries",         "entries"),
+    ("Late Entries",    "late_entries"),
+    ("Results",         "results"),
+    ("Special Winners", "special"),
+    ("Special Prizes",  "special_list"),
+    ("Tickets",         "tickets"),
+    ("Hall of Fame",    "hall_of_fame"),
+    ("Notes",           "notes"),
 ]
 
 ADMIN_NAV = [
-    ("Import Data",    "import"),
+    ("Import Data",     "import"),
+    ("Reset Data",      "reset"),
 ]
 
 
@@ -111,8 +115,12 @@ class MainWindow(ctk.CTk):
         from views.late_entries_view import LateEntriesView
         from views.results_view import ResultsView
         from views.special_view import SpecialView
+        from views.special_list_view import SpecialListView
         from views.tickets_view import TicketsView
+        from views.hall_of_fame_view import HallOfFameView
+        from views.notes_view import NotesView
         from views.reimport_view import ReImportView
+        from views.reset_view import ResetView
 
         view_map = {
             "dashboard":    DashboardView,
@@ -122,8 +130,12 @@ class MainWindow(ctk.CTk):
             "late_entries": LateEntriesView,
             "results":      ResultsView,
             "special":      SpecialView,
+            "special_list": SpecialListView,
             "tickets":      TicketsView,
+            "hall_of_fame": HallOfFameView,
+            "notes":        NotesView,
             "import":       ReImportView,
+            "reset":        ResetView,
         }
         cls = view_map.get(key)
         return cls(self._content) if cls else None
