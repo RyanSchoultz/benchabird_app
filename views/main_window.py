@@ -12,6 +12,7 @@ NAV = [
     ("Special Winners", "special"),
     ("Special Prizes",  "special_list"),
     ("Tickets",         "tickets"),
+    ("Reports",         "reports"),
     ("Hall of Fame",    "hall_of_fame"),
     ("Notes",           "notes"),
 ]
@@ -117,6 +118,7 @@ class MainWindow(ctk.CTk):
         from views.special_view import SpecialView
         from views.special_list_view import SpecialListView
         from views.tickets_view import TicketsView
+        from views.reports_view import ReportsView
         from views.hall_of_fame_view import HallOfFameView
         from views.notes_view import NotesView
         from views.reimport_view import ReImportView
@@ -132,6 +134,7 @@ class MainWindow(ctk.CTk):
             "special":      SpecialView,
             "special_list": SpecialListView,
             "tickets":      TicketsView,
+            "reports":      ReportsView,
             "hall_of_fame": HallOfFameView,
             "notes":        NotesView,
             "import":       ReImportView,
