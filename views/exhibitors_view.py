@@ -1,6 +1,7 @@
 # views/exhibitors_view.py
 import customtkinter as ctk
 from controllers.exhibitor_ctrl import get_all, search, save, delete
+from views._paginated_table import PaginatedTable
 
 
 class ExhibitorsView(ctk.CTkFrame):
@@ -17,7 +18,8 @@ class ExhibitorsView(ctk.CTkFrame):
         toolbar = ctk.CTkFrame(self, fg_color="transparent")
         toolbar.grid(row=0, column=0, sticky="ew", padx=16, pady=(12, 4))
 
-        ctk.CTkLabel(toolbar, text="Exhibitors", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left")
+        ctk.CTkLabel(toolbar, text="Exhibitors",
+                     font=ctk.CTkFont(size=16, weight="bold")).pack(side="left")
         ctk.CTkButton(toolbar, text="+ Add Exhibitor", width=130,
                       command=self._open_edit_dialog).pack(side="right", padx=(4, 0))
         ctk.CTkButton(toolbar, text="Edit", width=70,
@@ -32,36 +34,21 @@ class ExhibitorsView(ctk.CTkFrame):
         ctk.CTkEntry(toolbar, textvariable=self._search_var,
                      placeholder_text="Search name / email...", width=220).pack(side="right", padx=(0, 8))
 
-        self._table = ctk.CTkScrollableFrame(self, fg_color=("gray92", "gray16"))
+        self._table = PaginatedTable(
+            self,
+            headers=["Exh #", "Name", "Town", "Phone", "Email"],
+            on_select=self._select,
+        )
         self._table.grid(row=1, column=0, sticky="nsew", padx=16, pady=(4, 16))
-        self._table.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
-
-        for col, hdr in enumerate(["Exh #", "Name", "Town", "Phone", "Email"]):
-            ctk.CTkLabel(self._table, text=hdr, font=ctk.CTkFont(weight="bold"),
-                         fg_color=("gray82", "gray22"), corner_radius=4).grid(
-                row=0, column=col, sticky="ew", padx=2, pady=(0, 2)
-            )
 
     def _load(self):
-        for w in self._table.winfo_children():
-            info = w.grid_info()
-            if info and int(info.get("row", 0)) > 0:
-                w.destroy()
-
         exhibitors = search(self._search_var.get())
-        for row_i, e in enumerate(exhibitors, start=1):
-            vals = [str(e.exh_no or ""), e.name or "", e.town or "",
-                    e.tel_home or e.cell_no or "", e.email or ""]
-            for col_i, val in enumerate(vals):
-                bg = ("gray88", "gray18") if row_i % 2 == 0 else ("gray92", "gray16")
-                ctk.CTkButton(
-                    self._table, text=val, anchor="w",
-                    fg_color=bg, text_color=("gray10", "gray90"),
-                    hover_color=("gray80", "gray25"),
-                    corner_radius=0, height=28,
-                    font=ctk.CTkFont(size=12),
-                    command=lambda pk=e.id: self._select(pk),
-                ).grid(row=row_i, column=col_i, sticky="ew", padx=2, pady=1)
+        data = [
+            (e.id, [str(e.exh_no or ""), e.name or "", e.town or "",
+                    e.tel_home or e.cell_no or "", e.email or ""])
+            for e in exhibitors
+        ]
+        self._table.load(data)
 
     def _select(self, pk: int):
         self._selected_pk = pk
