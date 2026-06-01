@@ -1,9 +1,9 @@
 # views/results_view.py
 import customtkinter as ctk
+from tkinter import messagebox
 from repository.results_repo import ResultsRepo
-from models.results import NotBenched
 from services.results_service import record_result, clear_results
-from services.not_benched_service import mark_not_benched, unmark_not_benched
+from services.not_benched_service import mark_not_benched, unmark_not_benched, get_not_benched_set, is_not_benched
 
 _repo = ResultsRepo()
 
@@ -18,7 +18,6 @@ class ResultsView(ctk.CTkFrame):
 
     def _build(self):
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=1)
 
         # ── Toolbar ──────────────────────────────────────────────────
         toolbar = ctk.CTkFrame(self, fg_color="transparent")
@@ -70,7 +69,7 @@ class ResultsView(ctk.CTkFrame):
             )
 
         results = _repo.get_all_results()
-        nb_set = {nb.exhibit_no for nb in NotBenched.select()}
+        nb_set = get_not_benched_set()
 
         for row_i, r in enumerate(results, start=1):
             bg = ("gray88", "gray18") if row_i % 2 == 0 else ("gray92", "gray16")
@@ -103,8 +102,7 @@ class ResultsView(ctk.CTkFrame):
             self._msg.configure(text="Enter a numeric exhibit number.")
             return
         exh = int(raw)
-        existing = NotBenched.get_or_none(NotBenched.exhibit_no == exh)
-        if existing:
+        if is_not_benched(exh):
             unmark_not_benched(exh)
             self._msg.configure(text=f"#{raw}: Not Benched removed.")
         else:
@@ -113,6 +111,8 @@ class ResultsView(ctk.CTkFrame):
         self._reload_table()
 
     def _clear_all(self):
+        if not messagebox.askyesno("Clear All Results", "This will remove all recorded results. Continue?"):
+            return
         clear_results()
         self._msg.configure(text="All results cleared.")
         self._reload_table()
