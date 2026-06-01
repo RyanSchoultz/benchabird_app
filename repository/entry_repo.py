@@ -1,5 +1,6 @@
 # repository/entry_repo.py
 from models.show_entry import ShowEntry, CalculatedEntry, LateEntry
+from repository import _chunks
 
 class EntryRepo:
     def get_all(self) -> list:
@@ -17,7 +18,8 @@ class EntryRepo:
     def remove(self, entry) -> None:
         entry.delete_instance()
 
-    def bulk_insert(self, rows: list) -> None:
+    def replace_all(self, rows: list) -> None:
+        """Wipe all ShowEntry rows and replace with rows. Import use only."""
         with ShowEntry._meta.database.atomic():
             ShowEntry.delete().execute()
             for batch in _chunks(rows, 200):
@@ -38,8 +40,3 @@ class EntryRepo:
 
     def late_count(self) -> int:
         return LateEntry.select().count()
-
-
-def _chunks(lst, n):
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]

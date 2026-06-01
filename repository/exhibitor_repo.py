@@ -1,5 +1,6 @@
 # repository/exhibitor_repo.py
 from models.exhibitor import Exhibitor
+from repository import _chunks
 
 class ExhibitorRepo:
     def get_all(self) -> list:
@@ -38,8 +39,3 @@ class ExhibitorRepo:
 
     def count(self) -> int:
         return Exhibitor.select().count()
-
-
-def _chunks(lst, n):
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]
