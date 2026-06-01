@@ -54,6 +54,13 @@ def generate_prize_money(sd=None) -> bytes:
         y -= ROW_H
         total_cash += sp.cash or 0
 
+    if y < MARGIN + ROW_H * 3:
+        draw_footer(c, page_num)
+        c.showPage()
+        page_num += 1
+        y = draw_page_header(c, "Prize Money", sd)
+        _draw_col_headers(c, y)
+        y -= ROW_H
     y -= 4
     c.setLineWidth(0.5)
     c.line(MARGIN, y, PAGE_W - MARGIN, y)

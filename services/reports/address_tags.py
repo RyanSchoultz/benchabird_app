@@ -16,12 +16,20 @@ def generate_address_tags(sd=None) -> bytes:
     buf, c = new_canvas()
     page_num = 1
 
+    if not exhibitors:
+        draw_page_header(c, "Address Tags", sd)
+        draw_footer(c, page_num)
+        c.save()
+        return buf.getvalue()
+
     for i, exh in enumerate(exhibitors):
         page_pos = i % TAGS_PER_PAGE
-        if page_pos == 0 and i > 0:
-            draw_footer(c, page_num)
-            c.showPage()
-            page_num += 1
+        if page_pos == 0:
+            if i > 0:
+                draw_footer(c, page_num)
+                c.showPage()
+                page_num += 1
+            draw_page_header(c, "Address Tags", sd)
 
         row, col = divmod(page_pos, COLS)
         x = MARGIN + col * TAG_W

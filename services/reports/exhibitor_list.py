@@ -46,6 +46,12 @@ def generate_exhibitor_list(sd=None) -> bytes:
             c.drawString(x, y, val)
         y -= ROW_H
 
+    if y < MARGIN + ROW_H * 2:
+        draw_footer(c, page_num)
+        c.showPage()
+        page_num += 1
+        y = draw_page_header(c, "Exhibitor List", sd)
+        y = _draw_col_headers(c, y)
     y -= 4
     c.setFont("Helvetica-Bold", 9)
     c.drawString(MARGIN, y, f"Total: {len(rows)} exhibitors")
