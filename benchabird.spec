@@ -10,6 +10,9 @@ a = Analysis(
     binaries=[],
     datas=[
         (ctk_path, 'customtkinter/'),
+        ('benchabird.db', '.'),
+        ('logo.png', '.'),
+        ('icon.ico', '.'),
     ],
     hiddenimports=[
         'customtkinter',
@@ -25,6 +28,10 @@ a = Analysis(
         'reportlab.lib.colors',
         'qrcode',
         'qrcode.constants',
+        'pymupdf',
+        'fitz',
+        'PIL',
+        'PIL.Image',
     ],
     hookspath=[],
     hooksconfig={},
@@ -52,5 +59,5 @@ exe = EXE(
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
-    icon=None,
+    icon='icon.ico',
 )

@@ -17,11 +17,71 @@ def new_canvas() -> tuple:
     return buf, c
 
 
+def _faded_image_reader(logo_source, opacity: float = 0.12):
+    """
+    Return (ImageReader, (orig_w, orig_h)) for a logo rendered at reduced opacity,
+    composited correctly over a white background.  Returns None on any failure.
+    """
+    from PIL import Image
+    from reportlab.lib.utils import ImageReader
+    import io as _io
+    try:
+        if isinstance(logo_source, (bytes, bytearray)):
+            img = Image.open(_io.BytesIO(bytes(logo_source))).convert("RGBA")
+        else:
+            from pathlib import Path as _Path
+            p = _Path(str(logo_source))
+            if not p.exists():
+                return None
+            img = Image.open(str(p)).convert("RGBA")
+
+        orig_size = img.size
+
+        # Scale each pixel's alpha to the desired opacity — preserves colour fidelity
+        r, g, b, a = img.split()
+        a_faded = a.point(lambda v: int(v * opacity))
+        img_faded = Image.merge("RGBA", (r, g, b, a_faded))
+
+        # Alpha-composite onto a pure-white background so transparent areas become
+        # white (matching the PDF page colour) instead of muddy grey.
+        bg = Image.new("RGBA", img.size, (255, 255, 255, 255))
+        composited = Image.alpha_composite(bg, img_faded)
+
+        out = _io.BytesIO()
+        composited.convert("RGB").save(out, format="PNG")
+        out.seek(0)
+        return ImageReader(out), orig_size
+    except Exception:
+        return None
+
+
+def _draw_watermark(c: canvas.Canvas, sd) -> None:
+    """Draw a centred, faded club-logo watermark behind page content."""
+    if not sd:
+        return
+    logo_source = getattr(sd, 'logo_data', None) or getattr(sd, 'logo_path', None)
+    if not logo_source:
+        return
+
+    result = _faded_image_reader(logo_source, opacity=0.12)
+    if not result:
+        return
+
+    reader, (orig_w, orig_h) = result
+    pts_w = 110 * mm
+    pts_h = pts_w * orig_h / orig_w
+    x = (PAGE_W - pts_w) / 2
+    y = (PAGE_H - pts_h) / 2
+    c.drawImage(reader, x, y, width=pts_w, height=pts_h)
+
+
 def draw_page_header(c: canvas.Canvas, title: str, sd=None) -> float:
     """
-    Draw show name/logo (left) and report title (right) at top of page.
+    Draw watermark + header (show name, report title, date/club) at top of page.
     Returns the y coordinate of the content start line (below the rule).
     """
+    _draw_watermark(c, sd)
+
     show_name = ""
     date_club = ""
     if sd:
@@ -29,29 +89,8 @@ def draw_page_header(c: canvas.Canvas, title: str, sd=None) -> float:
         parts = [p for p in [sd.date_eng, sd.club_eng_full] if p]
         date_club = "  |  ".join(parts)
 
-    # Logo or show-name text at top-left
-    logo_drawn = False
-    if sd and getattr(sd, 'logo_path', None):
-        from pathlib import Path as _Path
-        from reportlab.lib.utils import ImageReader
-        logo_file = _Path(sd.logo_path)
-        if logo_file.exists():
-            try:
-                logo_w = 35 * mm
-                logo_h = 18 * mm
-                c.drawImage(
-                    ImageReader(str(logo_file)),
-                    MARGIN, TOP_Y - logo_h,
-                    width=logo_w, height=logo_h,
-                    preserveAspectRatio=True, mask='auto',
-                )
-                logo_drawn = True
-            except Exception:
-                pass
-
-    if not logo_drawn:
-        c.setFont("Helvetica-Bold", 13)
-        c.drawString(MARGIN, TOP_Y, show_name)
+    c.setFont("Helvetica-Bold", 13)
+    c.drawString(MARGIN, TOP_Y, show_name)
 
     c.setFont("Helvetica", 11)
     c.drawRightString(PAGE_W - MARGIN, TOP_Y, title)
@@ -67,7 +106,7 @@ def draw_page_header(c: canvas.Canvas, title: str, sd=None) -> float:
 
 
 def draw_footer(c: canvas.Canvas, page_num: int) -> None:
-    """Draw centered page number at bottom of current page."""
+    """Draw centred page number at the bottom of the current page."""
     c.setFont("Helvetica", 8)
     c.setFillColorRGB(0.5, 0.5, 0.5)
     c.drawCentredString(PAGE_W / 2, MARGIN - 4, f"Page {page_num}")

@@ -7,16 +7,28 @@ from views._paginated_table import PaginatedTable
 class SpecialView(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent, fg_color="transparent")
+        self._all_data: list = []
+        self._winner_map: dict = {}
         self._build()
 
     def _build(self):
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(2, weight=1)
 
-        ctk.CTkLabel(self, text="Special Winners",
-                     font=ctk.CTkFont(size=16, weight="bold")).grid(
-            row=0, column=0, sticky="w", padx=16, pady=12
-        )
+        toolbar = ctk.CTkFrame(self, fg_color="transparent")
+        toolbar.grid(row=0, column=0, sticky="ew", padx=16, pady=(12, 4))
+        ctk.CTkLabel(toolbar, text="Special Winners",
+                     font=ctk.CTkFont(size=16, weight="bold")).pack(side="left")
+
+        filter_bar = ctk.CTkFrame(self, fg_color="transparent")
+        filter_bar.grid(row=1, column=0, sticky="ew", padx=16, pady=(0, 2))
+        self._filter_var = ctk.StringVar()
+        self._filter_var.trace_add("write", lambda *_: self._apply_filter())
+        ctk.CTkEntry(filter_bar, textvariable=self._filter_var,
+                     placeholder_text="Filter by description, exhibit #…", width=280).pack(side="left")
+        ctk.CTkButton(filter_bar, text="✕", width=28, height=28,
+                      fg_color="transparent", text_color=("gray40", "gray60"),
+                      command=lambda: self._filter_var.set("")).pack(side="left", padx=4)
 
         self._table = PaginatedTable(
             self,
@@ -24,12 +36,13 @@ class SpecialView(ctk.CTkFrame):
             col_weights=[1, 1, 2, 2, 0],
             selectable=False,
         )
-        self._table.grid(row=1, column=0, sticky="nsew", padx=16, pady=(0, 16))
+        self._table.grid(row=2, column=0, sticky="nsew", padx=16, pady=(0, 16))
         self._reload_table()
 
     def _reload_table(self):
         winners = get_winners_with_details()
-        data = [
+        self._winner_map = {w['special_nr']: w for w in winners}
+        self._all_data = [
             (w['special_nr'], [
                 w['special_nr'] or "",
                 str(w['exhibit_no'] or ""),
@@ -38,7 +51,12 @@ class SpecialView(ctk.CTkFrame):
             ])
             for w in winners
         ]
-        winner_map = {w['special_nr']: w for w in winners}
+        self._apply_filter()
+
+    def _apply_filter(self):
+        q = self._filter_var.get().strip().lower()
+        data = [r for r in self._all_data if not q or any(q in c.lower() for c in r[1])]
+        winner_map = self._winner_map
 
         def assign_render(special_nr, row_i, frame):
             w = winner_map.get(special_nr, {})

@@ -16,21 +16,30 @@ RESULT_OPTIONS = ["1st", "2nd", "3rd", "4th", "5th", "BOB", "R/U BOB", "Champion
 class ResultsView(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent, fg_color="transparent")
+        self._all_results: list = []
+        self._nb_set: set = set()
         self._build()
 
     def _build(self):
         self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(1, minsize=56)  # ensure form row never collapses
+        self.grid_rowconfigure(3, weight=1)
 
+        # ── Toolbar ──────────────────────────────────────────────────
         toolbar = ctk.CTkFrame(self, fg_color="transparent")
         toolbar.grid(row=0, column=0, sticky="ew", padx=16, pady=(12, 4))
         ctk.CTkLabel(toolbar, text="Results",
                      font=ctk.CTkFont(size=16, weight="bold")).pack(side="left")
+        ctk.CTkButton(toolbar, text="Export", width=80,
+                      fg_color=("gray80", "gray30"), text_color=("gray10", "gray90"),
+                      command=self._export).pack(side="right", padx=4)
         ctk.CTkButton(toolbar, text="Clear All Results",
                       fg_color=("gray80", "gray30"), text_color=("gray10", "gray90"),
-                      command=self._clear_all).pack(side="right", padx=(4, 0))
+                      command=self._clear_all).pack(side="right", padx=(4, 4))
 
+        # ── Quick entry form ─────────────────────────────────────────
         form = ctk.CTkFrame(self, fg_color=("gray88", "gray20"), corner_radius=8)
-        form.grid(row=1, column=0, sticky="ew", padx=16, pady=(0, 8))
+        form.grid(row=1, column=0, sticky="ew", padx=16, pady=(0, 4))
 
         ctk.CTkLabel(form, text="Exhibit #:").pack(side="left", padx=(12, 4), pady=8)
         self._exh_entry = ctk.CTkEntry(form, width=80, placeholder_text="e.g. 42")
@@ -41,7 +50,7 @@ class ResultsView(ctk.CTkFrame):
         self._result_combo.set("1st")
         self._result_combo.pack(side="left", padx=4, pady=8)
 
-        ctk.CTkButton(form, text="Save Result", width=110,
+        ctk.CTkButton(form, text="Save  ↵", width=100,
                       command=self._save_result).pack(side="left", padx=(8, 4), pady=8)
         ctk.CTkButton(form, text="Not Benched", width=110,
                       fg_color=("gray75", "gray35"), text_color=("gray10", "gray90"),
@@ -50,31 +59,61 @@ class ResultsView(ctk.CTkFrame):
                                   text_color=("gray40", "gray60"))
         self._msg.pack(side="left", padx=12)
 
-        self.grid_rowconfigure(2, weight=1)
+        # Keyboard shortcuts for rapid entry
+        self._exh_entry.bind("<Return>", lambda e: self._result_combo.focus())
+        self._exh_entry.bind("<Tab>",    lambda e: (self._result_combo.focus(), "break"))
+        self._result_combo.bind("<Return>", lambda e: self._save_result())
+
+        # ── Filter bar ───────────────────────────────────────────────
+        filter_bar = ctk.CTkFrame(self, fg_color="transparent")
+        filter_bar.grid(row=2, column=0, sticky="ew", padx=16, pady=(0, 2))
+        self._filter_var = ctk.StringVar()
+        self._filter_var.trace_add("write", lambda *_: self._apply_filter())
+        ctk.CTkEntry(filter_bar, textvariable=self._filter_var,
+                     placeholder_text="Filter by exhibit # or result…", width=260).pack(side="left")
+        ctk.CTkButton(filter_bar, text="✕", width=28, height=28,
+                      fg_color="transparent", text_color=("gray40", "gray60"),
+                      command=lambda: self._filter_var.set("")).pack(side="left", padx=4)
+        self._filter_status = ctk.CTkLabel(filter_bar, text="",
+                                            font=ctk.CTkFont(size=11),
+                                            text_color=("gray40", "gray60"))
+        self._filter_status.pack(side="left", padx=8)
+
+        # ── Results table ────────────────────────────────────────────
         self._table = PaginatedTable(
             self,
-            headers=["Exhibit No", "Result", "Not Benched"],
+            headers=["Exhibit No", "Result", "NB"],
             col_weights=[1, 1, 1],
             selectable=False,
         )
-        self._table.grid(row=2, column=0, sticky="nsew", padx=16, pady=(0, 16))
+        self._table.grid(row=3, column=0, sticky="nsew", padx=16, pady=(0, 16))
         self._reload_table()
+        self._exh_entry.focus()
 
     def _reload_table(self):
         results = _repo.get_all_results()
-        nb_set = get_not_benched_set()
-        data = [(r.exhibit_no, [str(r.exhibit_no), r.result or ""]) for r in results]
+        self._nb_set = get_not_benched_set()
+        self._all_results = [(r.exhibit_no, [str(r.exhibit_no), r.result or ""]) for r in results]
+        self._apply_filter()
+
+    def _apply_filter(self):
+        q = self._filter_var.get().strip().lower()
+        data = [r for r in self._all_results if not q or any(q in c.lower() for c in r[1])]
+        nb_set = self._nb_set
 
         def nb_render(exhibit_no, row_i, frame):
             bg = ("gray88", "gray18") if row_i % 2 == 0 else ("gray92", "gray16")
-            ctk.CTkLabel(
-                frame, text="NB" if exhibit_no in nb_set else "",
-                fg_color=bg, anchor="center",
-                font=ctk.CTkFont(size=11),
-                text_color=("red4", "tomato"),
-            ).grid(row=row_i, column=2, sticky="ew", padx=2, pady=1)
+            ctk.CTkLabel(frame, text="NB" if exhibit_no in nb_set else "",
+                         fg_color=bg, anchor="center", font=ctk.CTkFont(size=11),
+                         text_color=("red4", "tomato")).grid(
+                row=row_i, column=2, sticky="ew", padx=2, pady=1
+            )
 
         self._table.load(data, row_render=nb_render)
+        total = len(self._all_results)
+        self._filter_status.configure(
+            text=f"{len(data)} of {total}" if q else f"{total} results"
+        )
 
     def _save_result(self):
         raw = self._exh_entry.get().strip()
@@ -83,8 +122,9 @@ class ResultsView(ctk.CTkFrame):
             self._msg.configure(text="Enter a numeric exhibit number.")
             return
         record_result(int(raw), result_val)
-        self._msg.configure(text=f"Saved: #{raw} → {result_val}")
+        self._msg.configure(text=f"✓  #{raw} → {result_val}")
         self._exh_entry.delete(0, "end")
+        self._exh_entry.focus()        # auto-focus back for rapid entry
         self._reload_table()
 
     def _toggle_not_benched(self):
@@ -99,6 +139,8 @@ class ResultsView(ctk.CTkFrame):
         else:
             mark_not_benched(exh)
             self._msg.configure(text=f"#{raw}: Marked Not Benched.")
+        self._exh_entry.delete(0, "end")
+        self._exh_entry.focus()
         self._reload_table()
 
     def _clear_all(self):
@@ -108,3 +150,13 @@ class ResultsView(ctk.CTkFrame):
         clear_results()
         self._msg.configure(text="All results cleared.")
         self._reload_table()
+
+    def _export(self):
+        from services.export_service import export_data
+        nb_set = get_not_benched_set()
+        results = _repo.get_all_results()
+        rows = [
+            [str(r.exhibit_no), r.result or "", "NB" if r.exhibit_no in nb_set else ""]
+            for r in results
+        ]
+        export_data(rows, ["ExhibitNo", "Result", "NotBenched"], "results.csv")

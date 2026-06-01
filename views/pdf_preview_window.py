@@ -84,6 +84,12 @@ class PDFPreviewWindow(ctk.CTkToplevel):
             command=self._save_as,
         ).pack(side="right")
 
+        ctk.CTkButton(
+            bottom, text="Print…", width=90,
+            fg_color=("gray75", "gray32"), text_color=("gray10", "gray90"),
+            command=self._print,
+        ).pack(side="right", padx=(0, 4))
+
     def _load_doc(self):
         """Open the PDF bytes in a background thread, then render page 0."""
         def _load():
@@ -125,6 +131,23 @@ class PDFPreviewWindow(ctk.CTkToplevel):
         if self._doc and self._page < self._page_count - 1:
             self._page += 1
             self._render_current()
+
+    def _print(self):
+        """Save to a temp file and invoke the OS print action."""
+        import tempfile
+        import os
+        try:
+            tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False,
+                                              prefix="benchabird_print_")
+            tmp.write(self._pdf_bytes)
+            tmp.close()
+            if sys.platform == "win32":
+                os.startfile(tmp.name, "print")
+            else:
+                subprocess.Popen(["lpr", tmp.name])
+            self._status_lbl.configure(text="Sent to printer.")
+        except Exception as exc:
+            self._status_lbl.configure(text=f"Print failed: {exc}")
 
     def _save_as(self):
         path = filedialog.asksaveasfilename(

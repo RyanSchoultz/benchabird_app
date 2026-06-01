@@ -1,7 +1,7 @@
 import math
 import customtkinter as ctk
 
-PAGE_SIZE = 100
+PAGE_SIZE = 50
 
 
 def paginate(data: list, page: int, page_size: int = PAGE_SIZE) -> list:
@@ -79,6 +79,19 @@ class PaginatedTable(ctk.CTkFrame):
             command=self._next,
         )
         self._next_btn.grid(row=0, column=2, padx=8, pady=4)
+
+    def show_loading(self):
+        """Show a loading indicator while data is being fetched in the background."""
+        for w in self._scroll.winfo_children():
+            w.destroy()
+        ctk.CTkLabel(
+            self._scroll, text="Loading…",
+            font=ctk.CTkFont(size=13),
+            text_color=("gray50", "gray55"),
+        ).grid(row=0, column=0, columnspan=len(self._headers), pady=40)
+        self._page_label.configure(text="")
+        self._prev_btn.configure(state="disabled")
+        self._next_btn.configure(state="disabled")
 
     def load(self, data: list, *, row_render=None):
         """Replace displayed data. Resets to page 0."""

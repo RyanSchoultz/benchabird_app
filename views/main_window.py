@@ -1,9 +1,11 @@
 # views/main_window.py
 import customtkinter as ctk
-from config import APP_NAME, APP_VERSION
+from PIL import Image
+from config import APP_NAME, APP_VERSION, BASE_DIR
 
 NAV = [
     ("Dashboard",       "dashboard"),
+    ("Search",          "search"),
     ("Show Setup",      "setup"),
     ("Exhibitors",      "exhibitors"),
     ("Entries",         "entries"),
@@ -21,6 +23,8 @@ NAV = [
 ADMIN_NAV = [
     ("Import Data",     "import"),
     ("Reset Data",      "reset"),
+    ("Archives",        "archives"),
+    ("SQL Editor",      "sql_editor"),
 ]
 
 
@@ -32,7 +36,28 @@ class MainWindow(ctk.CTk):
         self.minsize(960, 620)
         self._active_key = None
         self._nav_btns: dict = {}
+        self._set_icon()
         self._build()
+        self._bind_shortcuts()
+
+    def _bind_shortcuts(self):
+        for seq, key in [
+            ("<Control-f>", "search"), ("<Control-F>", "search"),
+            ("<Control-h>", "help"),   ("<Control-H>", "help"),
+            ("<Control-e>", "entries"), ("<Control-E>", "entries"),
+            ("<Control-r>", "results"), ("<Control-R>", "results"),
+            ("<Control-t>", "tickets"), ("<Control-T>", "tickets"),
+            ("<Control-x>", "exhibitors"), ("<Control-X>", "exhibitors"),
+        ]:
+            self.bind(seq, lambda e, k=key: self.navigate(k))
+
+    def _set_icon(self):
+        ico = BASE_DIR / "icon.ico"
+        if ico.exists():
+            try:
+                self.iconbitmap(str(ico))
+            except Exception:
+                pass
 
     def _build(self):
         self.grid_columnconfigure(1, weight=1)
@@ -42,11 +67,21 @@ class MainWindow(ctk.CTk):
         self._sidebar.grid(row=0, column=0, sticky="nsew")
         self._sidebar.grid_propagate(False)
 
-        ctk.CTkLabel(
-            self._sidebar,
-            text="Benchabird\nShow Manager",
-            font=ctk.CTkFont(size=14, weight="bold"),
-        ).pack(padx=14, pady=(20, 12))
+        # Logo in sidebar header
+        logo_img = self._load_logo()
+        if logo_img:
+            ctk.CTkLabel(self._sidebar, image=logo_img, text="").pack(padx=14, pady=(16, 4))
+            ctk.CTkLabel(
+                self._sidebar,
+                text="Show Manager",
+                font=ctk.CTkFont(size=12, weight="bold"),
+            ).pack(padx=14, pady=(0, 10))
+        else:
+            ctk.CTkLabel(
+                self._sidebar,
+                text="Benchabird\nShow Manager",
+                font=ctk.CTkFont(size=14, weight="bold"),
+            ).pack(padx=14, pady=(20, 12))
 
         ctk.CTkFrame(self._sidebar, height=1, fg_color=("gray70", "gray35")).pack(fill="x", padx=14, pady=(0, 10))
 
@@ -88,6 +123,21 @@ class MainWindow(ctk.CTk):
         self._content.grid_columnconfigure(0, weight=1)
         self._content.grid_rowconfigure(0, weight=1)
 
+    def _load_logo(self):
+        logo_path = BASE_DIR / "logo.png"
+        if not logo_path.exists():
+            return None
+        try:
+            img = Image.open(str(logo_path))
+            # Fit into sidebar width (167px) preserving aspect ratio, max height 60px
+            max_w, max_h = 167, 60
+            w, h = img.size
+            scale = min(max_w / w, max_h / h)
+            new_w, new_h = int(w * scale), int(h * scale)
+            return ctk.CTkImage(img, size=(new_w, new_h))
+        except Exception:
+            return None
+
     def navigate(self, key: str):
         if self._active_key and self._active_key in self._nav_btns:
             self._nav_btns[self._active_key].configure(
@@ -125,9 +175,15 @@ class MainWindow(ctk.CTk):
         from views.reimport_view import ReImportView
         from views.reset_view import ResetView
         from views.help_view import HelpView
+        from views.search_view import SearchView
+        from views.archive_view import ArchiveView
+        from views.sql_editor_view import SQLEditorView
+        from views.welcome_view import WelcomeView
 
         view_map = {
+            "welcome":      WelcomeView,
             "dashboard":    DashboardView,
+            "search":       SearchView,
             "setup":        SetupView,
             "exhibitors":   ExhibitorsView,
             "entries":      EntriesView,
@@ -142,6 +198,7 @@ class MainWindow(ctk.CTk):
             "help":         HelpView,
             "import":       ReImportView,
             "reset":        ResetView,
+            "sql_editor":   SQLEditorView,
         }
         cls = view_map.get(key)
         return cls(self._content) if cls else None

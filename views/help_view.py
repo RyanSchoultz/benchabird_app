@@ -6,162 +6,398 @@ import customtkinter as ctk
 SECTIONS = {
     "Getting Started": [
         ("First Launch", (
-            "When you start Benchabird for the first time with an empty database, "
-            "the Import Wizard will appear automatically.\n\n"
-            "Click 'Import from MDB' to load all exhibitors, classes, special prizes, "
-            "Hall of Fame records, and brochure notes from the Access MDB file. "
-            "The log shows progress for each table.\n\n"
-            "If you want to start fresh without importing, click 'Skip (start empty)'."
+            "When you start Benchabird for the first time the app creates a fresh "
+            "database automatically — you can begin entering data right away.\n\n"
+            "If you are migrating from a legacy Access MDB file, go to Import Data "
+            "in the admin section of the sidebar. The import wizard loads exhibitors, "
+            "class definitions, special prizes, Hall of Fame records, and brochure "
+            "notes from the MDB file. The log shows progress for each table.\n\n"
+            "If you want to start from scratch, skip the import wizard and add your "
+            "data directly through the Exhibitors and Entries views."
         )),
-        ("Navigation", (
-            "Use the left sidebar to navigate between sections:\n\n"
-            "• Dashboard — Show Setup\n"
-            "• Exhibitors — Browse all registered exhibitors\n"
-            "• Entries — Raw show entries and calculated entries\n"
-            "• Late Entries — Entries submitted after closing\n"
-            "• Results — Record judging results\n"
-            "• Special Winners — Assign special prize winners\n"
-            "• Special Prizes — Manage the special prize list\n"
-            "• Tickets — Print cage tickets after Calculate\n"
-            "• Reports — Generate and preview PDF reports\n"
-            "• Hall of Fame — Historical records (read-only)\n"
-            "• Notes — Edit brochure notes per bird type\n\n"
+        ("Sidebar Navigation", (
+            "Use the left sidebar to move between sections.\n\n"
+            "Main section:\n"
+            "  Dashboard       — live show progress overview\n"
+            "  Search          — global search across all data (Ctrl+F)\n"
+            "  Show Setup      — show name, date, club, logo\n"
+            "  Exhibitors      — browse and manage exhibitors (Ctrl+X)\n"
+            "  Entries         — show entries and calculated entries (Ctrl+E)\n"
+            "  Late Entries    — post-deadline entries\n"
+            "  Results         — enter and review judging results (Ctrl+R)\n"
+            "  Special Winners — assign special prize winners\n"
+            "  Special Prizes  — manage the prize list\n"
+            "  Tickets         — print cage tickets (Ctrl+T)\n"
+            "  Reports         — generate PDF reports\n"
+            "  Hall of Fame    — historical records (read-only)\n"
+            "  Notes           — brochure text per bird type\n"
+            "  Help            — this guide (Ctrl+H)\n\n"
             "Admin section (below the divider):\n"
-            "• Import Data — Re-import from MDB\n"
-            "• Reset Data — Clear all show-year data"
+            "  Import Data  — re-import from Access MDB\n"
+            "  Reset Data   — clear all show-year data\n"
+            "  Archives     — save and restore database snapshots\n"
+            "  SQL Editor   — direct SQL access for advanced users"
         )),
-        ("Show Setup", (
-            "Go to Show Setup to enter the show name, date, club name, and association "
-            "in both English and Afrikaans. These details appear at the top of all "
-            "generated PDF reports.\n\n"
-            "Club Logo: click 'Browse…' to select a PNG or JPG logo file. "
-            "The logo appears in place of the show name text at the top of each PDF page. "
-            "Click 'Clear' to remove it."
+        ("Recommended Show Workflow", (
+            "Follow these steps in order for a typical show:\n\n"
+            "1. Show Setup — enter show name, date, club details, upload logo\n"
+            "2. Exhibitors — add all registered exhibitors\n"
+            "3. Entries — add each exhibitor's class entries\n"
+            "4. Calculate — assigns sequential ticket numbers (button in Entries view)\n"
+            "5. Tickets — print cage tickets for exhibitors to attach to cages\n"
+            "6. Results — enter judging results during or after the show\n"
+            "7. Special Winners — assign special prize winners by exhibit number\n"
+            "8. Reports — generate Results Sheet, Catalogue, Prize Money, etc.\n"
+            "9. Archive (optional) — save a snapshot before resetting for next season\n\n"
+            "You do not need to follow this order strictly — entries and exhibitors can "
+            "be added at any time, and you can re-run Calculate as many times as needed."
+        )),
+        ("Keyboard Shortcuts", (
+            "Global navigation shortcuts:\n\n"
+            "  Ctrl+F   — Search\n"
+            "  Ctrl+E   — Entries\n"
+            "  Ctrl+R   — Results\n"
+            "  Ctrl+T   — Tickets\n"
+            "  Ctrl+X   — Exhibitors\n"
+            "  Ctrl+H   — Help (this view)\n\n"
+            "Context shortcuts:\n\n"
+            "  Results view\n"
+            "    Enter on Exhibit # field  — moves focus to Result dropdown\n"
+            "    Enter on Result dropdown  — saves the result\n\n"
+            "  SQL Editor\n"
+            "    Ctrl+Enter  — run the current query\n\n"
+            "  Most dialogs\n"
+            "    Escape  — close without saving"
         )),
     ],
+
+    "Setup & Logo": [
+        ("Show Details", (
+            "Go to Show Setup and fill in:\n\n"
+            "  • Show Name (English and Afrikaans)\n"
+            "  • Date (English and Afrikaans)\n"
+            "  • Club Code and Club Full Name (English and Afrikaans)\n"
+            "  • Association\n\n"
+            "Click Save. These details appear at the top of every generated PDF report."
+        )),
+        ("Club Logo", (
+            "1. In Show Setup, click Browse… next to Club Logo\n"
+            "2. Select a PNG or JPG image file\n"
+            "3. The logo appears immediately in the preview box below the buttons\n"
+            "4. The image is stored as bytes inside the database — the original file "
+            "is not needed again and the logo travels with the database file\n\n"
+            "The logo is applied as a faded watermark centered on every PDF report page "
+            "and on every cage ticket page. It does not overlap any text.\n\n"
+            "Click Clear to remove the logo from the database."
+        )),
+    ],
+
+    "Exhibitors": [
+        ("Adding an Exhibitor", (
+            "1. Click + Add in the toolbar\n"
+            "2. Fill in the exhibitor number, name, address, suburb, town, zip code, "
+            "phone, cell, email, and club\n"
+            "3. Tick Include in address label print run if this exhibitor should appear "
+            "on the Address Tags PDF report\n"
+            "4. Click Save\n\n"
+            "The exhibitor number must be unique. An error message appears if the number "
+            "is already in use."
+        )),
+        ("Editing and Deleting", (
+            "Select a row in the table by clicking it, then:\n\n"
+            "  • Click Edit to open the edit dialog — make changes and click Save\n"
+            "  • Click Delete to permanently remove the exhibitor\n\n"
+            "Deleting an exhibitor does not automatically remove their entries. "
+            "Use Bulk Edit in the Entries view to delete entries by exhibitor number."
+        )),
+        ("Address Labels", (
+            "The Address Tags report prints mailing labels only for exhibitors whose "
+            "Include in label print run flag is ticked.\n\n"
+            "The Labels column in the table shows a ✓ for flagged exhibitors.\n\n"
+            "To toggle the flag quickly without opening the edit dialog:\n"
+            "1. Select an exhibitor row in the table\n"
+            "2. Click Toggle Labels in the toolbar\n\n"
+            "You can also tick the checkbox when adding or editing an exhibitor."
+        )),
+        ("Searching and Exporting", (
+            "Search: type in the search box at the right of the toolbar. The table "
+            "filters live as you type, matching on name and email.\n\n"
+            "Export: click Export to save the current filtered list to a file. "
+            "A save dialog lets you choose CSV (.csv) or Excel (.xlsx). "
+            "The exported file includes all columns: exhibitor number, name, address, "
+            "suburb, town, zip, phone, cell, email, club, and label flag."
+        )),
+    ],
+
     "Entries": [
-        ("Adding Entries", (
-            "Navigate to Entries and use the Add Entry form:\n\n"
-            "1. Enter the exhibitor number (must exist in the Exhibitors table)\n"
-            "2. Enter the class code (must exist in the Class Schedule)\n"
-            "3. Click 'Add' — the entry is validated and saved\n\n"
-            "Duplicate entries are prevented: if an exhibitor already has an entry "
-            "for a class, you will see an error message."
+        ("Adding an Entry", (
+            "1. Click + Add Entry in the toolbar\n"
+            "2. Enter the exhibitor number (must match an existing exhibitor)\n"
+            "3. Select or type the class code — the dropdown lists all available classes\n"
+            "4. If a duplicate is detected (that exhibitor already has an entry for that "
+            "class), an orange warning appears — you can still save if intentional\n"
+            "5. Press Enter on the class combo or click Save\n\n"
+            "Press Escape to close without saving."
         )),
-        ("Calculate (Generate Tickets)", (
-            "The 'Calculate' button in the Entries view processes all raw entries "
-            "and assigns sequential ticket numbers. This populates the Calculated "
-            "Entries table, which is the basis for:\n\n"
-            "• Cage tickets (with QR codes)\n"
-            "• The Show Catalogue PDF\n"
-            "• Results recording\n"
-            "• Special winner assignments\n\n"
-            "Always run Calculate before printing tickets or recording results."
+        ("Bulk Editing", (
+            "Click Bulk Edit… to open the bulk operations dialog. It has four tabs:\n\n"
+            "Bulk Add\n"
+            "  Enter an exhibitor number, then paste class codes into the text area "
+            "(one code per line). Click Add All to create entries for each code. "
+            "Duplicates are skipped and reported in the status message.\n\n"
+            "Rename Class\n"
+            "  Enter the current class code and the new code. Click Rename to update "
+            "every entry in the database that uses the old code.\n\n"
+            "Delete Exhibitor\n"
+            "  Enter an exhibitor number and click Preview Count to see how many entries "
+            "will be removed. Click Delete All to permanently remove them (confirmation required).\n\n"
+            "Reassign Exhibitor\n"
+            "  Enter a From exhibitor number and a To exhibitor number. All entries for "
+            "the From number are updated to the To number (confirmation required)."
         )),
-        ("Late Entries", (
-            "Late entries are managed in the Late Entries view. They follow the "
-            "same entry format but are stored separately. Late entries are included "
-            "in exhibitor-count reports but are not part of the main calculated sequence."
+        ("Calculate (Run 0010)", (
+            "Calculate assigns sequential ticket numbers to all raw entries. "
+            "This is required before printing tickets or recording results.\n\n"
+            "Click Run Calculate (0010) in the toolbar.\n\n"
+            "What it does:\n"
+            "  • Processes all entries in the ShowEntry table\n"
+            "  • Assigns a unique ticket number to each entry\n"
+            "  • Resolves exhibitor names from the Exhibitor table\n"
+            "  • Populates the CalculatedEntry table\n\n"
+            "Re-run Calculate after adding, removing, or changing entries. "
+            "Existing results are not affected by re-running."
         )),
         ("Viewing Entries", (
-            "The Entries view has two tabs:\n\n"
-            "• Raw Entries — the original entries before Calculate\n"
-            "• Calculated — entries after Calculate with assigned ticket numbers\n\n"
-            "Both tables are paginated (100 rows per page). Use '← Prev' and 'Next →' "
-            "to navigate. The row count is shown in the status bar."
+            "Use the segmented button in the toolbar to switch views:\n\n"
+            "Show Entries — the raw entries as entered, showing AutoNum, ExhNo, and Class. "
+            "These are the source records before any processing.\n\n"
+            "Calculated — entries after Calculate, showing ticket number (#), exhibitor "
+            "number, exhibitor name, and class code. This is the basis for tickets, "
+            "results, and reports.\n\n"
+            "Both views have a filter bar below the toolbar. Type to filter live by "
+            "exhibitor number, class code, or name.\n\n"
+            "The Export button saves the current view (filtered or not) to CSV or Excel."
         )),
     ],
-    "Results & Specials": [
-        ("Recording Results", (
-            "In the Results view, select a calculated entry from the table, "
-            "then enter the result (e.g. 1st, 2nd, 3rd, BOB, CC) and click Save.\n\n"
-            "To mark an entry as Not Benched, tick the 'Not Benched' checkbox. "
-            "Not-benched entries appear in red on the Results Sheet PDF."
+
+    "Results": [
+        ("Rapid Entry Mode", (
+            "The Results view is designed for fast entry during judging:\n\n"
+            "1. Type the exhibit number in the Exhibit # field\n"
+            "2. Press Enter — focus moves to the Result dropdown\n"
+            "3. Select the result (1st, 2nd, 3rd, 4th, 5th, BOB, R/U BOB, Champion, Reserve)\n"
+            "4. Press Enter — the result is saved and focus returns to Exhibit #\n"
+            "5. Repeat for the next exhibit\n\n"
+            "This flow lets you enter results without touching the mouse. "
+            "If an exhibit already has a result, it is updated with the new value."
         )),
-        ("Special Winners", (
-            "In the Special Winners view:\n\n"
-            "1. The table shows all special prizes and their current winner (if assigned)\n"
-            "2. Click 'Assign' on a row to open the assignment dialog\n"
-            "3. Enter the ticket/exhibit number of the winner\n"
-            "4. Click Save\n\n"
-            "Winners are linked to calculated entries by their auto number (ticket number)."
+        ("Not Benched", (
+            "If a bird was not brought to the show:\n"
+            "1. Type the exhibit number in the Exhibit # field\n"
+            "2. Click Not Benched\n\n"
+            "The exhibit appears in the table with NB shown in red in the NB column. "
+            "Clicking Not Benched again on the same exhibit number removes the flag.\n\n"
+            "Not-benched entries are highlighted in the Results Sheet PDF report."
         )),
-        ("Managing Special Prizes", (
-            "The Special Prizes view lets you add, edit, and delete the prize list:\n\n"
-            "• Click '+ Add' to create a new special prize\n"
-            "• Select a row and click 'Edit' to modify it\n"
-            "• Select a row and click 'Delete' to remove it (no confirmation — be careful)\n\n"
-            "Fields: Special Nr (unique ID), Description, Prize (trophy/medal/etc.), "
-            "Cash Amount (leave blank if none)."
+        ("Filter and Export", (
+            "The filter bar below the toolbar filters the results table live by exhibit "
+            "number or result value.\n\n"
+            "Click Export to save all results (including NB flags) to CSV or Excel. "
+            "The exported file includes: exhibit number, result, and not-benched status."
+        )),
+        ("Clear All Results", (
+            "Click Clear All Results in the top-right of the toolbar to remove every "
+            "recorded result. A confirmation dialog appears before any data is deleted.\n\n"
+            "This is useful when you need to re-judge a category or start over. "
+            "Not-benched flags are not cleared by this action — use the SQL Editor "
+            "to clear not_benched records if needed."
         )),
     ],
+
     "Tickets & Reports": [
         ("Printing Cage Tickets", (
-            "After running Calculate in the Entries view:\n\n"
-            "1. Go to Tickets\n"
-            "2. Click 'Print Tickets' to generate the ticket PDF\n"
-            "3. A preview window opens — check the layout\n"
-            "4. Click 'Save As…' to save the PDF and open it for printing\n\n"
-            "Each ticket shows:\n"
-            "• Large ticket number (#001)\n"
-            "• Class code\n"
-            "• Exhibitor number and name\n"
-            "• Show name\n"
-            "• QR code (top-right) encoding the exhibitor number and class"
+            "Before printing, run Calculate in the Entries view to assign ticket numbers.\n\n"
+            "1. Navigate to Tickets\n"
+            "2. The table shows all assigned tickets with exhibitor details\n"
+            "3. Use the filter bar to check specific exhibitors\n"
+            "4. Click Print All Tickets\n"
+            "5. Choose a save location — the PDF opens automatically after saving\n\n"
+            "Each ticket contains:\n"
+            "  • Large ticket number (#042)\n"
+            "  • Class code\n"
+            "  • Exhibitor number and name\n"
+            "  • Show name\n"
+            "  • QR code (top-right) encoding ExhNo and Class\n"
+            "  • Club logo watermark (if set in Show Setup)\n\n"
+            "Tickets are printed 21 per A4 page (3 columns × 7 rows)."
         )),
         ("Generating PDF Reports", (
-            "The Reports view offers 7 PDF reports:\n\n"
-            "• Entries Received — all calculated entries in ticket order\n"
-            "• Show Catalogue — entries grouped by class with class headers\n"
-            "• Results Sheet — all results, not-benched shown in red\n"
-            "• Special Winners — all special prizes and their winners\n"
-            "• Prize Money — cash prizes only with running total\n"
-            "• Address Tags — 3-column mailing labels for all exhibitors\n"
-            "• Exhibitor List — all exhibitors with entry and late-entry counts\n\n"
-            "Click any report button to generate it. A preview window opens so you "
-            "can review the output before saving. Click 'Save As…' in the preview "
-            "window to save and open the PDF."
+            "Click any report button in the Reports view to generate it:\n\n"
+            "  Entries Received  — all calculated entries in ticket number order\n"
+            "  Show Catalogue    — entries grouped by class with section headers\n"
+            "  Results Sheet     — all results; not-benched rows shown in red\n"
+            "  Special Winners   — all special prizes and their assigned winners\n"
+            "  Prize Money       — cash prizes with per-exhibitor subtotals\n"
+            "  Address Tags      — 3-column mailing labels (label-flagged exhibitors only)\n"
+            "  Exhibitor List    — all exhibitors with entry and late-entry counts\n\n"
+            "All reports include the show name, date, club, and the club logo watermark "
+            "(if configured). Generation runs in the background — the preview opens "
+            "automatically when complete."
         )),
-        ("PDF Preview Navigation", (
-            "The PDF Preview window shows one page at a time:\n\n"
-            "• Use '← Prev' and 'Next →' to move between pages\n"
-            "• The page counter shows 'Page N / M'\n"
-            "• Click 'Save As…' to choose a location and save the PDF\n"
-            "• On Windows, the PDF opens automatically after saving\n"
-            "• Click 'Close' to dismiss without saving"
+        ("PDF Preview Window", (
+            "The preview window opens after any report or ticket PDF is generated.\n\n"
+            "Navigation:\n"
+            "  ← Prev / Next →  — move between pages\n"
+            "  Page N / M label — shows current page and total\n\n"
+            "Actions:\n"
+            "  Print…    — opens the OS print dialog with the PDF pre-loaded\n"
+            "  Save As…  — save to a location of your choice; on Windows the PDF "
+            "opens automatically in your default viewer after saving\n"
+            "  Close     — dismiss the preview without saving"
         )),
     ],
-    "Data Management": [
-        ("Resetting Show Data", (
-            "The Reset Data function permanently deletes all show-year data:\n\n"
-            "• All show entries and calculated entries\n"
-            "• All late entries\n"
-            "• All results and not-benched flags\n"
-            "• All special winner assignments\n\n"
-            "It does NOT delete exhibitors, class definitions, Hall of Fame records, "
-            "or brochure notes.\n\n"
-            "Use this at the start of a new show season. A confirmation dialog will "
-            "appear before any data is deleted."
+
+    "Search & Filter": [
+        ("Global Search", (
+            "Press Ctrl+F or click Search in the sidebar to open the global search view.\n\n"
+            "Type your query in the search box. Results appear automatically after a "
+            "short pause and are grouped into five categories:\n\n"
+            "  Exhibitors       — matched by name or exhibitor number\n"
+            "  Entries          — raw entries matched by exhibitor number or class code\n"
+            "  Calculated       — calculated entries matched by name, number, or class\n"
+            "  Results          — matched by exhibit number or result value\n"
+            "  Special Winners  — matched by prize description or winner name\n\n"
+            "Up to 8 results per category are shown. If there are more, a "
+            "View all N → link appears to navigate to the full view.\n\n"
+            "Each result has a → button to jump directly to that record."
         )),
-        ("Re-importing from MDB", (
-            "Go to Import Data in the admin section to re-import data from the "
-            "Access MDB file. This will overwrite all currently imported reference data "
-            "(exhibitors, classes, Hall of Fame, etc.).\n\n"
-            "The import log shows progress for each table. The source MDB path is "
-            "set in config.py and cannot be changed from within the app."
+        ("Per-View Filters", (
+            "Every table view has a filter bar below the toolbar.\n\n"
+            "Type in the filter box — the visible rows update live without re-querying "
+            "the database. All data is loaded once and filtered in memory, so filtering "
+            "is instant regardless of table size.\n\n"
+            "Click the ✕ button to clear the filter and show all rows again.\n\n"
+            "The status label (next to the toolbar title) shows how many rows are "
+            "visible vs. the total, e.g. 12 of 559 tickets."
+        )),
+    ],
+
+    "Archives": [
+        ("Saving a Snapshot", (
+            "Archives save a complete copy of the entire database at a point in time. "
+            "Use them before resetting at the end of a show season, or before making "
+            "bulk changes you might want to undo.\n\n"
+            "1. Go to Archives (admin section in the sidebar)\n"
+            "2. Type a descriptive name in the Save current show as field\n"
+            "   (e.g. 2025 Western Cape Regional Show)\n"
+            "3. Click Save Snapshot\n\n"
+            "The snapshot appears in the archive list with its name, date, time, "
+            "and file size. Snapshots are stored in an archives/ folder alongside "
+            "the main database file."
+        )),
+        ("Restoring a Snapshot", (
+            "Restoring replaces all current data with the saved snapshot.\n\n"
+            "1. Find the snapshot in the archive list\n"
+            "2. Click Restore\n"
+            "3. Read the confirmation dialog — it explains exactly what will be replaced\n"
+            "4. Click Yes to proceed\n\n"
+            "After restoring, the app navigates to the Dashboard with the restored data "
+            "loaded. The previous database state is permanently overwritten.\n\n"
+            "Tip: if you want to keep the current state, save a new snapshot before "
+            "restoring an older one."
+        )),
+        ("Deleting a Snapshot", (
+            "Select a snapshot in the archive list and click Delete. "
+            "A confirmation dialog appears before the file is removed. "
+            "Deleted snapshots cannot be recovered."
+        )),
+    ],
+
+    "Data Management": [
+        ("Reset Data", (
+            "Reset Data permanently deletes all show-year data:\n\n"
+            "  ✓ Removed: all show entries, calculated entries, late entries, "
+            "results, not-benched flags, and special winner assignments\n\n"
+            "  ✗ Kept: exhibitors, class definitions, special prize list, "
+            "Hall of Fame records, brochure notes, and show details\n\n"
+            "Use Reset Data at the start of a new show season. A confirmation "
+            "dialog explains what will be deleted before any action is taken.\n\n"
+            "Best practice: save an Archive snapshot before resetting."
+        )),
+        ("Import Data (from MDB)", (
+            "Go to Import Data in the admin section to load data from a legacy "
+            "Microsoft Access MDB file.\n\n"
+            "The import wizard loads:\n"
+            "  • Exhibitors\n"
+            "  • Class definitions\n"
+            "  • Special prize list\n"
+            "  • Hall of Fame records\n"
+            "  • Brochure notes\n\n"
+            "Existing records in those tables are overwritten. Show entries and "
+            "results are not affected.\n\n"
+            "The MDB file path is configured in config.py and cannot be changed "
+            "from within the app."
         )),
         ("Brochure Notes", (
-            "The Notes view lets you edit the brochure text for each bird type:\n\n"
+            "The Notes view stores brochure text for each bird type abbreviation.\n\n"
             "1. Click a type abbreviation in the left panel to load its notes\n"
             "2. Edit the text in the right panel\n"
-            "3. Click 'Save Notes' to persist the changes\n\n"
-            "Notes are imported from the MDB but can be freely edited here."
+            "3. Click Save Notes\n\n"
+            "Notes are imported from the MDB but can be freely edited here. "
+            "They appear in the Show Catalogue PDF report."
         )),
         ("Hall of Fame", (
-            "The Hall of Fame view displays historical champion records imported "
-            "from the Access database. This view is read-only — records cannot be "
-            "added or edited from within the app.\n\n"
-            "Records are sorted by year (most recent first) then by type abbreviation."
+            "The Hall of Fame view shows historical champion records imported "
+            "from the Access database. Records are sorted by year (most recent first) "
+            "and then by bird type abbreviation.\n\n"
+            "This view is read-only. Records cannot be added or edited from within "
+            "the app. To modify Hall of Fame records, use the SQL Editor."
+        )),
+    ],
+
+    "SQL Editor": [
+        ("What It Is", (
+            "The SQL Editor gives direct read/write access to the SQLite database "
+            "that powers Benchabird. It is intended for advanced users who are "
+            "comfortable writing SQL queries.\n\n"
+            "Common uses:\n"
+            "  • Bulk corrections that the normal UI does not support\n"
+            "  • Checking data counts and totals\n"
+            "  • Exporting specific data combinations\n"
+            "  • Investigating unexpected results\n\n"
+            "The editor is in the SQL Editor item in the admin section of the sidebar."
+        )),
+        ("Running a Query", (
+            "1. Type or paste your SQL into the editor (Courier New font)\n"
+            "2. Press Ctrl+Enter or click ▶ Run to execute\n"
+            "3. Results appear in the scrollable table below (up to 500 rows)\n"
+            "4. The status bar shows the row count or an error message\n\n"
+            "Click Tables… to auto-run a query listing all tables in the database. "
+            "This is a quick way to explore the schema.\n\n"
+            "Comments starting with -- are supported and ignored during execution."
+        )),
+        ("Write Queries", (
+            "INSERT, UPDATE, DELETE, DROP, CREATE, ALTER, and TRUNCATE queries "
+            "require confirmation before running. A dialog explains what you are "
+            "about to do and gives you the chance to cancel.\n\n"
+            "There is no automatic undo for write operations. Save an Archive "
+            "snapshot before making bulk changes with the SQL Editor."
+        )),
+        ("Key Tables", (
+            "show_details       — show name, date, club, logo bytes\n"
+            "exhibitor          — all exhibitors\n"
+            "show_entry         — raw entries before Calculate\n"
+            "calculated_entry   — entries after Calculate (with ticket numbers)\n"
+            "late_entry         — late entries\n"
+            "result             — judging results\n"
+            "not_benched        — exhibit numbers marked Not Benched\n"
+            "special_list       — special prize definitions\n"
+            "special_winner     — special prize winner assignments\n"
+            "class_def          — class code definitions\n"
+            "hall_of_fame       — historical champion records\n"
+            "notes_brochure     — brochure text per bird type\n\n"
+            "Run SELECT name FROM sqlite_master WHERE type='table' ORDER BY name; "
+            "to get the full list of tables at any time."
         )),
     ],
 }
@@ -201,7 +437,7 @@ class HelpView(ctk.CTkFrame):
                     text=topic_title,
                     font=ctk.CTkFont(size=13, weight="bold"),
                     anchor="w",
-                ).grid(row=row_i * 2, column=0, sticky="w", padx=8, pady=(16, 2))
+                ).grid(row=row_i * 2, column=0, sticky="w", padx=8, pady=(18, 2))
 
                 ctk.CTkLabel(
                     scroll,
@@ -209,5 +445,5 @@ class HelpView(ctk.CTkFrame):
                     font=ctk.CTkFont(size=12),
                     anchor="w",
                     justify="left",
-                    wraplength=680,
-                ).grid(row=row_i * 2 + 1, column=0, sticky="w", padx=16, pady=(0, 4))
+                    wraplength=700,
+                ).grid(row=row_i * 2 + 1, column=0, sticky="w", padx=20, pady=(0, 4))

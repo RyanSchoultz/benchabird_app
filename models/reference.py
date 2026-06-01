@@ -1,5 +1,5 @@
 # models/reference.py
-from peewee import IntegerField, CharField, TextField
+from peewee import IntegerField, CharField, TextField, BlobField
 from models.database import BaseModel
 
 class ShowDetails(BaseModel):
@@ -13,6 +13,7 @@ class ShowDetails(BaseModel):
     club_eng_full = CharField(max_length=50, null=True)
     association = CharField(max_length=50, null=True)
     logo_path = CharField(max_length=500, null=True)
+    logo_data = BlobField(null=True)  # raw image bytes stored in DB
 
     class Meta:
         table_name = 'show_details'

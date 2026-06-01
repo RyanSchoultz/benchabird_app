@@ -24,13 +24,15 @@ class ExhibitorDialog(ctk.CTkToplevel):
         super().__init__(parent)
         self._pk = pk
         self.title("Add Exhibitor" if pk is None else "Edit Exhibitor")
-        self.geometry("420x520")
+        self.geometry("420x560")
         self.resizable(False, False)
         self.grab_set()
         self._entries: dict = {}
+        self._print_address_var = ctk.BooleanVar(value=False)
         self._build()
         if pk:
             self._populate(_repo.get_by_id(pk))
+        self.bind("<Escape>", lambda e: self.destroy())
 
     def _build(self):
         self.grid_columnconfigure(0, weight=1)
@@ -40,10 +42,23 @@ class ExhibitorDialog(ctk.CTkToplevel):
         scroll.grid_columnconfigure(1, weight=1)
 
         for row, (field, label, _) in enumerate(FIELDS):
-            ctk.CTkLabel(scroll, text=label, anchor="e").grid(row=row, column=0, sticky="e", padx=(0, 8), pady=3)
+            ctk.CTkLabel(scroll, text=label, anchor="e").grid(
+                row=row, column=0, sticky="e", padx=(0, 8), pady=3
+            )
             ent = ctk.CTkEntry(scroll)
             ent.grid(row=row, column=1, sticky="ew", pady=3)
             self._entries[field] = ent
+
+        # Print address toggle
+        last = len(FIELDS)
+        ctk.CTkLabel(scroll, text="Print Address Labels:", anchor="e").grid(
+            row=last, column=0, sticky="e", padx=(0, 8), pady=6
+        )
+        ctk.CTkCheckBox(
+            scroll, text="Include in address label print run",
+            variable=self._print_address_var,
+            onvalue=True, offvalue=False,
+        ).grid(row=last, column=1, sticky="w", pady=6)
 
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.grid(row=1, column=0, pady=(4, 12))
@@ -57,11 +72,13 @@ class ExhibitorDialog(ctk.CTkToplevel):
             val = getattr(exhibitor, field, None)
             if val is not None:
                 self._entries[field].insert(0, str(val))
+        self._print_address_var.set(bool(getattr(exhibitor, "print_address", False)))
 
     def _save(self):
         data = {}
         for field, _, typ in FIELDS:
             raw = self._entries[field].get().strip()
             data[field] = int(raw) if typ == "int" and raw else (raw or None)
+        data["print_address"] = self._print_address_var.get()
         save(self._pk, data)
         self.destroy()
