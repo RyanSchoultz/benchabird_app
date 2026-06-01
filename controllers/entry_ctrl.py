@@ -24,3 +24,7 @@ def add(exh_no: int, class_code: str):
 
 def remove(auto_num: int):
     remove_entry(auto_num)
+
+
+def delete_by_auto_num(auto_num: int):
+    remove_entry(auto_num)
