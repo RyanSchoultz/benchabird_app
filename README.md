@@ -2,6 +2,10 @@
 
 A standalone Windows desktop application for managing cage-bird shows. Replaces a legacy Microsoft Access system with a modern, offline-first Python app — no network connection, no server, no installation required.
 
+<p align="center">
+  <img src="git_assets/image01.png" alt="Benchabird Show Manager — Welcome Screen" width="100%">
+</p>
+
 ---
 
 ## Table of Contents
