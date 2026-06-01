@@ -27,6 +27,14 @@ class ResultsRepo:
     def unmark_not_benched(self, exhibit_no: int) -> None:
         NotBenched.delete().where(NotBenched.exhibit_no == exhibit_no).execute()
 
+    def get_not_benched_set(self) -> set:
+        """Return set of exhibit numbers marked as not benched."""
+        return {nb.exhibit_no for nb in NotBenched.select()}
+
+    def is_not_benched(self, exhibit_no: int) -> bool:
+        """Check if an exhibit number is marked as not benched."""
+        return NotBenched.get_or_none(NotBenched.exhibit_no == exhibit_no) is not None
+
     def get_special_winners(self) -> list:
         return list(SpecialWinner.select().order_by(SpecialWinner.special_nr))
 
