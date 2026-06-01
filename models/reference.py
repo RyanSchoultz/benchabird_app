@@ -50,6 +50,7 @@ class NotesBrochure(BaseModel):
         table_name = 'notes_brochure'
 
 class NumberSeq(BaseModel):
+    """Working table for exhibit number sequences (NumberSeq_T). Not an import target from MDB."""
     exhibit_number = IntegerField(null=True)
     exh_no_seq = CharField(max_length=10, null=True)
 

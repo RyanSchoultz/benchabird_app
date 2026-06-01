@@ -15,7 +15,7 @@ def test_show_entry_create(test_db):
 
 def test_class_def_create(test_db):
     from models.class_def import ClassDef
-    cd = ClassDef.create(class_code="G82", bird_type="CANARY", class_seq="010")
+    cd = ClassDef.create(class_code="G82", bird_type="CANARY", class_seq=10)
     assert ClassDef.get(ClassDef.class_code == "G82").bird_type == "CANARY"
 
 def test_special_winner_create(test_db):
