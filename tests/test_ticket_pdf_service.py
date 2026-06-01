@@ -31,4 +31,4 @@ def test_generate_ticket_pdf_large_set():
     assert isinstance(pdf, bytes)
     assert pdf[:4] == b'%PDF'
     # 559 tickets / 21 per page = 27 pages (rough check via file size)
-    assert len(pdf) > 40_000
+    assert len(pdf) > 44_000

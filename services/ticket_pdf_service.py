@@ -66,7 +66,8 @@ def _draw_ticket(c, x: float, y: float, w: float, h: float,
 
     # Class code — secondary heading
     c.setFont("Helvetica-Bold", 9)
-    c.drawString(x + pad, y + h - 16 * mm, f"Class: {ticket['class_code'] or ''}")
+    class_code = (ticket['class_code'] or '')[:12]
+    c.drawString(x + pad, y + h - 16 * mm, f"Class: {class_code}")
 
     # Exhibitor number
     c.setFont("Helvetica", 9)
