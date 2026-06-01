@@ -61,11 +61,11 @@ class ReportsView(ctk.CTkFrame):
         )
         if not path:
             return
+        sd = self._get_sd()
         self._status.configure(text=f"Generating {default_name}…")
 
         def run():
             try:
-                sd = self._get_sd()
                 pdf_bytes = gen_fn(sd=sd)
                 with open(path, "wb") as f:
                     f.write(pdf_bytes)
