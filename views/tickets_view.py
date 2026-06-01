@@ -1,6 +1,12 @@
 # views/tickets_view.py
+import threading
 import customtkinter as ctk
+from tkinter import filedialog
+import subprocess
+import sys
 from services.ticket_service import get_ticket_assignments
+from services.ticket_pdf_service import generate_ticket_pdf
+from models.reference import ShowDetails
 
 
 class TicketsView(ctk.CTkFrame):
@@ -14,24 +20,84 @@ class TicketsView(ctk.CTkFrame):
 
         toolbar = ctk.CTkFrame(self, fg_color="transparent")
         toolbar.grid(row=0, column=0, sticky="ew", padx=16, pady=(12, 4))
-        ctk.CTkLabel(toolbar, text="Tickets", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left")
-        ctk.CTkButton(toolbar, text="Print All Tickets", command=self._print).pack(side="right")
+        ctk.CTkLabel(toolbar, text="Tickets",
+                     font=ctk.CTkFont(size=16, weight="bold")).pack(side="left")
+
+        self._print_btn = ctk.CTkButton(
+            toolbar, text="Print All Tickets",
+            command=self._start_print,
+        )
+        self._print_btn.pack(side="right")
+
+        self._status = ctk.CTkLabel(toolbar, text="",
+                                    font=ctk.CTkFont(size=11),
+                                    text_color=("gray40", "gray60"))
+        self._status.pack(side="left", padx=12)
 
         table = ctk.CTkScrollableFrame(self, fg_color=("gray92", "gray16"))
         table.grid(row=1, column=0, sticky="nsew", padx=16, pady=(0, 16))
         for col_i, hdr in enumerate(["Ticket #", "AutoNum", "ExhNo", "Name", "Class"]):
             table.grid_columnconfigure(col_i, weight=1)
             ctk.CTkLabel(table, text=hdr, font=ctk.CTkFont(weight="bold"),
-                         fg_color=("gray82", "gray22")).grid(row=0, column=col_i, sticky="ew", padx=2, pady=(0, 2))
+                         fg_color=("gray82", "gray22")).grid(
+                row=0, column=col_i, sticky="ew", padx=2, pady=(0, 2)
+            )
 
-        for row_i, t in enumerate(get_ticket_assignments(), start=1):
+        tickets = get_ticket_assignments()
+        for row_i, t in enumerate(tickets, start=1):
             bg = ("gray88", "gray18") if row_i % 2 == 0 else ("gray92", "gray16")
             vals = [str(t['ticket_no']), str(t['auto_num']), str(t['exh_no'] or ""),
                     t['name'] or "", t['class_code'] or ""]
             for col_i, val in enumerate(vals):
                 ctk.CTkLabel(table, text=val, fg_color=bg, anchor="w",
-                             font=ctk.CTkFont(size=12)).grid(row=row_i, column=col_i, sticky="ew", padx=2, pady=1)
+                             font=ctk.CTkFont(size=12)).grid(
+                    row=row_i, column=col_i, sticky="ew", padx=2, pady=1
+                )
 
-    def _print(self):
-        ctk.CTkLabel(self, text="PDF printing — planned for Phase 2",
-                     text_color=("gray50", "gray60")).grid(row=2, column=0, pady=8)
+        if not tickets:
+            ctk.CTkLabel(table, text="Run Calculate first to generate tickets.",
+                         text_color=("gray50", "gray55")).grid(
+                row=1, column=0, columnspan=5, pady=20
+            )
+
+    def _start_print(self):
+        tickets = get_ticket_assignments()
+        if not tickets:
+            self._status.configure(text="No tickets — run Calculate first.")
+            return
+
+        path = filedialog.asksaveasfilename(
+            defaultextension=".pdf",
+            filetypes=[("PDF files", "*.pdf")],
+            initialfile="benchabird_tickets.pdf",
+            title="Save Ticket PDF",
+        )
+        if not path:
+            return
+
+        self._print_btn.configure(state="disabled", text="Generating…")
+        sd = ShowDetails.select().first()
+        show_name = f"{sd.show_eng} {sd.date_eng}" if sd else "Bird Show"
+        threading.Thread(
+            target=self._generate, args=(tickets, show_name, path), daemon=True
+        ).start()
+
+    def _generate(self, tickets: list, show_name: str, path: str):
+        try:
+            pdf_bytes = generate_ticket_pdf(tickets, show_name=show_name)
+            with open(path, "wb") as f:
+                f.write(pdf_bytes)
+            self.after(0, lambda: self._on_done(path))
+        except Exception as e:
+            self.after(0, lambda: self._on_error(str(e)))
+
+    def _on_done(self, path: str):
+        self._print_btn.configure(state="normal", text="Print All Tickets")
+        self._status.configure(text=f"Saved: {path}")
+        # Open the PDF automatically
+        if sys.platform == "win32":
+            subprocess.Popen(["start", "", path], shell=True)
+
+    def _on_error(self, msg: str):
+        self._print_btn.configure(state="normal", text="Print All Tickets")
+        self._status.configure(text=f"Error: {msg[:60]}")
