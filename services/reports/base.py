@@ -13,7 +13,7 @@ TOP_Y = PAGE_H - MARGIN
 def new_canvas() -> tuple:
     """Return (BytesIO buffer, Canvas). Call c.save() then buf.getvalue() when done."""
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
+    c = canvas.Canvas(buf, pagesize=A4, pageCompression=0)
     return buf, c
 
 
