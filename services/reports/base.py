@@ -48,5 +48,5 @@ def draw_footer(c: canvas.Canvas, page_num: int) -> None:
     """Draw centered page number at bottom of current page."""
     c.setFont("Helvetica", 8)
     c.setFillColorRGB(0.5, 0.5, 0.5)
-    c.drawCentredString(PAGE_W / 2, MARGIN - 10, f"Page {page_num}")
+    c.drawCentredString(PAGE_W / 2, MARGIN - 4, f"Page {page_num}")
     c.setFillColorRGB(0, 0, 0)
