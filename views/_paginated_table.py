@@ -34,6 +34,7 @@ class PaginatedTable(ctk.CTkFrame):
         col_weights: list = None,
         on_select=None,
         selectable: bool = True,
+        page_size: int = PAGE_SIZE,
         **kwargs,
     ):
         super().__init__(parent, fg_color=("gray92", "gray16"), **kwargs)
@@ -41,6 +42,7 @@ class PaginatedTable(ctk.CTkFrame):
         self._col_weights = col_weights or [1] * len(headers)
         self._on_select = on_select
         self._selectable = selectable
+        self._page_size = page_size
         self._data: list = []
         self._row_render = None
         self._page = 0
@@ -96,18 +98,28 @@ class PaginatedTable(ctk.CTkFrame):
                 fg_color=("gray82", "gray22"), corner_radius=4,
             ).grid(row=0, column=col_i, sticky="ew", padx=2, pady=(0, 2))
 
-        page_data = paginate(self._data, self._page)
+        page_data = paginate(self._data, self._page, self._page_size)
+
+        # Issue 2: Empty-state message
+        if not self._data:
+            ctk.CTkLabel(
+                self._scroll, text="No data",
+                font=ctk.CTkFont(size=12),
+                text_color=("gray50", "gray55"),
+            ).grid(row=1, column=0, columnspan=len(self._headers), pady=20)
+
         for row_i, (key, vals) in enumerate(page_data, start=1):
             bg = ("gray88", "gray18") if row_i % 2 == 0 else ("gray92", "gray16")
             for col_i, val in enumerate(vals):
-                if self._selectable:
+                # Issue 3: Guard selectable=True with no on_select
+                if self._selectable and self._on_select is not None:
                     ctk.CTkButton(
                         self._scroll, text=val, anchor="w",
                         fg_color=bg, text_color=("gray10", "gray90"),
                         hover_color=("gray80", "gray25"),
                         corner_radius=0, height=28,
                         font=ctk.CTkFont(size=12),
-                        command=lambda k=key: self._on_select(k) if self._on_select else None,
+                        command=lambda k=key: self._on_select(k),
                     ).grid(row=row_i, column=col_i, sticky="ew", padx=2, pady=1)
                 else:
                     ctk.CTkLabel(
@@ -117,7 +129,7 @@ class PaginatedTable(ctk.CTkFrame):
             if self._row_render:
                 self._row_render(key, row_i, self._scroll)
 
-        pages = total_pages(len(self._data))
+        pages = total_pages(len(self._data), self._page_size)
         self._page_label.configure(
             text=f"Page {self._page + 1} / {pages}  ({len(self._data)} rows)",
         )
@@ -130,6 +142,6 @@ class PaginatedTable(ctk.CTkFrame):
             self._render()
 
     def _next(self):
-        if self._page < total_pages(len(self._data)) - 1:
+        if self._page < total_pages(len(self._data), self._page_size) - 1:
             self._page += 1
             self._render()

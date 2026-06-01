@@ -39,3 +39,7 @@ def test_total_pages_559():
 
 def test_total_pages_custom_page_size():
     assert total_pages(25, page_size=10) == 3
+
+
+def test_paginate_out_of_bounds():
+    assert paginate(list(range(10)), 5) == []
