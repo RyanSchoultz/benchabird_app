@@ -3,6 +3,7 @@ import customtkinter as ctk
 from tkinter import messagebox
 from repository.results_repo import ResultsRepo
 from services.results_service import record_result, clear_results
+from services.scan_parser_service import ScanParseError, parse_scan_to_auto_num
 from services.not_benched_service import (
     mark_not_benched, unmark_not_benched, get_not_benched_set, is_not_benched,
 )
@@ -60,8 +61,8 @@ class ResultsView(ctk.CTkFrame):
         self._msg.pack(side="left", padx=12)
 
         # Keyboard shortcuts for rapid entry
-        self._exh_entry.bind("<Return>", lambda e: self._result_combo.focus())
-        self._exh_entry.bind("<Tab>",    lambda e: (self._result_combo.focus(), "break"))
+        self._exh_entry.bind("<Return>", lambda e: self._accept_exhibit_entry())
+        self._exh_entry.bind("<Tab>",    lambda e: self._accept_exhibit_entry())
         self._result_combo.bind("<Return>", lambda e: self._save_result())
 
         # ── Filter bar ───────────────────────────────────────────────
@@ -115,12 +116,30 @@ class ResultsView(ctk.CTkFrame):
             text=f"{len(data)} of {total}" if q else f"{total} results"
         )
 
-    def _save_result(self):
+    def _parse_exhibit_entry(self):
         raw = self._exh_entry.get().strip()
+        try:
+            return parse_scan_to_auto_num(raw)
+        except ScanParseError as exc:
+            self._msg.configure(text=str(exc))
+            return None
+
+    def _accept_exhibit_entry(self):
+        exhibit_no = self._parse_exhibit_entry()
+        if exhibit_no is None:
+            return "break"
+        self._exh_entry.delete(0, "end")
+        self._exh_entry.insert(0, str(exhibit_no))
+        self._msg.configure(text=f"Scan ready: #{exhibit_no}")
+        self._result_combo.focus()
+        return "break"
+
+    def _save_result(self):
+        exhibit_no = self._parse_exhibit_entry()
         result_val = self._result_combo.get().strip()
-        if not raw.isdigit():
-            self._msg.configure(text="Enter a numeric exhibit number.")
+        if exhibit_no is None:
             return
+        raw = str(exhibit_no)
         record_result(int(raw), result_val)
         self._msg.configure(text=f"✓  #{raw} → {result_val}")
         self._exh_entry.delete(0, "end")
@@ -128,10 +147,10 @@ class ResultsView(ctk.CTkFrame):
         self._reload_table()
 
     def _toggle_not_benched(self):
-        raw = self._exh_entry.get().strip()
-        if not raw.isdigit():
-            self._msg.configure(text="Enter a numeric exhibit number.")
+        exhibit_no = self._parse_exhibit_entry()
+        if exhibit_no is None:
             return
+        raw = str(exhibit_no)
         exh = int(raw)
         if is_not_benched(exh):
             unmark_not_benched(exh)
