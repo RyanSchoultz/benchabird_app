@@ -43,6 +43,7 @@ class ExhibitorBundleDialog(ctk.CTkToplevel):
         self.minsize(560, 460)
         self._build()
         self._load()
+        self.after(50, self.lift)
 
     def _build(self):
         self.grid_columnconfigure(0, weight=1)

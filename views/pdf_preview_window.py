@@ -26,6 +26,7 @@ class PDFPreviewWindow(ctk.CTkToplevel):
         self.geometry("760x960")
         self.minsize(500, 600)
         self.grab_set()
+        self.after(50, self.lift)
         self._build()
         self._load_doc()
 

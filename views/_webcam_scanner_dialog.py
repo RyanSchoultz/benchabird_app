@@ -18,6 +18,7 @@ class WebcamScannerDialog(ctk.CTkToplevel):
         self.protocol("WM_DELETE_WINDOW", self._close)
         self._build()
         self._start()
+        self.after(50, self.lift)
 
     def _build(self):
         self.grid_columnconfigure(0, weight=1)

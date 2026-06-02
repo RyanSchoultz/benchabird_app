@@ -22,6 +22,7 @@ class JudgeModeDialog(ctk.CTkToplevel):
         self.geometry("760x540")
         self.minsize(620, 420)
         self._build()
+        self.after(50, self.lift)
         self._scan_entry.focus()
 
     def _build(self):

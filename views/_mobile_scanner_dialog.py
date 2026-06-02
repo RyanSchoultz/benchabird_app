@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from PIL import Image, ImageTk
+from PIL import Image
 import qrcode
 
 from services.mobile_scan_service import MobileScanError, MobileScanReceiver
@@ -19,6 +19,7 @@ class MobileScannerDialog(ctk.CTkToplevel):
         self.protocol("WM_DELETE_WINDOW", self._close)
         self._build()
         self._start_receiver()
+        self.after(50, self.lift)
 
     def _build(self):
         self.grid_columnconfigure(0, weight=1)
@@ -98,7 +99,7 @@ class MobileScannerDialog(ctk.CTkToplevel):
     def _show_qr(self, url):
         img = qrcode.make(url).convert("RGB")
         img = img.resize((260, 260), Image.Resampling.NEAREST)
-        self._qr_image = ImageTk.PhotoImage(img)
+        self._qr_image = ctk.CTkImage(light_image=img, dark_image=img, size=(260, 260))
         self._qr_label.configure(image=self._qr_image, text="")
 
     def _poll(self):

@@ -27,6 +27,7 @@ class ExhibitorDialog(ctk.CTkToplevel):
         self.geometry("420x560")
         self.resizable(False, False)
         self.grab_set()
+        self.after(50, self.lift)
         self._entries: dict = {}
         self._print_address_var = ctk.BooleanVar(value=False)
         self._build()

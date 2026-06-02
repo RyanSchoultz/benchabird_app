@@ -12,6 +12,7 @@ class SpecialAssignDialog(ctk.CTkToplevel):
         self.geometry("380x200")
         self.resizable(False, False)
         self.grab_set()
+        self.after(50, self.lift)
         self._build(description, current_exhibit_no)
 
     def _build(self, description: str, current_exhibit_no):

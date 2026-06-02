@@ -11,6 +11,7 @@ class LateEntryDialog(ctk.CTkToplevel):
         self.geometry("340x240")
         self.resizable(False, False)
         self.grab_set()
+        self.after(50, self.lift)
         self._build()
 
     def _build(self):

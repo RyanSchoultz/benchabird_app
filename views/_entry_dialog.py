@@ -17,6 +17,7 @@ class EntryDialog(ctk.CTkToplevel):
         self.geometry("360x240")
         self.resizable(False, False)
         self.grab_set()
+        self.after(50, self.lift)
         self._class_codes = _load_class_codes()
         self._build()
 

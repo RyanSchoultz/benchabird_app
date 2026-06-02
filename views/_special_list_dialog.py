@@ -11,6 +11,7 @@ class SpecialListDialog(ctk.CTkToplevel):
         self.geometry("440x300")
         self.resizable(False, False)
         self.grab_set()
+        self.after(50, self.lift)
         self._special_nr = special_nr
         self._build()
         if special_nr:

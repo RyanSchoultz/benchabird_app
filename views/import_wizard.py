@@ -15,6 +15,7 @@ class ImportWizard(ctk.CTkToplevel):
         self.geometry("520x340")
         self.resizable(False, False)
         self.grab_set()
+        self.after(50, self.lift)
         self._build()
 
     def _build(self):
