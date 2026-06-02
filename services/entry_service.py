@@ -1,6 +1,6 @@
 # services/entry_service.py
 """0030 Show_Entries_M — add, remove, and validate show entries."""
-from models.show_entry import ShowEntry
+from models.show_entry import ShowEntry, LateEntry
 from models.class_def import ClassDef
 from repository.entry_repo import EntryRepo
 
@@ -11,8 +11,32 @@ class EntryValidationError(ValueError):
     pass
 
 
+def class_entry_count(class_code: str) -> int:
+    return (
+        ShowEntry.select().where(ShowEntry.class_code == class_code).count()
+        + LateEntry.select().where(LateEntry.class_code == class_code).count()
+    )
+
+
+def class_limit_message(class_def: ClassDef, class_code: str) -> str | None:
+    limit = class_def.entry_limit or 0
+    if limit <= 0:
+        return None
+    current = class_entry_count(class_code)
+    if current >= limit:
+        return f"Class {class_code} has reached its entry limit of {limit}."
+    return None
+
+
+def _check_class_limit(class_def: ClassDef, class_code: str) -> None:
+    msg = class_limit_message(class_def, class_code)
+    if msg:
+        raise EntryValidationError(msg)
+
+
 def add_entry(exh_no: int, class_code: str) -> ShowEntry:
-    if not ClassDef.get_or_none(ClassDef.class_code == class_code):
+    class_def = ClassDef.get_or_none(ClassDef.class_code == class_code)
+    if not class_def:
         raise EntryValidationError(f"Class code '{class_code}' not found in class schedule.")
     existing = ShowEntry.get_or_none(
         (ShowEntry.exh_no == exh_no) & (ShowEntry.class_code == class_code)
@@ -21,6 +45,7 @@ def add_entry(exh_no: int, class_code: str) -> ShowEntry:
         raise EntryValidationError(
             f"Exhibitor {exh_no} already has an entry for class {class_code}."
         )
+    _check_class_limit(class_def, class_code)
     next_num = _repo.next_auto_num()
     return _repo.add(next_num, exh_no, class_code)
 

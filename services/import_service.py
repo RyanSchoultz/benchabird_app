@@ -95,6 +95,7 @@ def _classes(conn, cb) -> int:
         'main_class': _n(r.get('MAINCLASS')),
         'colour':     _n(r.get('COLOUR')),
         'afrbesk':    _n(r.get('AFRBESK')),
+        'entry_limit': None,
     } for r in rows])
 
 

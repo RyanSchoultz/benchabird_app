@@ -12,6 +12,7 @@ class ClassDef(BaseModel):
     main_class = CharField(max_length=250, null=True)    # Access: MAINCLASS
     colour = CharField(max_length=250, null=True)        # Access: COLOUR
     afrbesk = CharField(max_length=50, null=True)        # Access: AFRBESK
+    entry_limit = IntegerField(null=True)
 
     class Meta:
         table_name = 'class_def'
