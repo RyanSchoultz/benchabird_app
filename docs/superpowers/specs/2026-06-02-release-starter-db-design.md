@@ -16,7 +16,8 @@ The starter database must include the full application schema and reference data
 
 Include:
 
-- Empty operational tables, including exhibitors, show entries, calculated entries, late entries, results, not-benched rows, and special winners.
+- Mostly empty operational tables, including show entries, calculated entries, late entries, results, not-benched rows, and special winners.
+- A small set of synthetic starter exhibitors whose names end with `_Demo`. These rows are demo placeholders only, not imported or historical exhibitors.
 - Default show settings structure, including any safe default `show_details` row if one exists or is created by the generation script.
 - Reference catalogue tables used to classify entries, including `class_def`, `species`, and `main_class`.
 - Other reference-only tables only if they are required for normal setup and do not contain historical club, exhibitor, entry, judging, or show result data.
@@ -25,6 +26,7 @@ Exclude:
 
 - Real historical show data.
 - Sample club names, exhibitor names, addresses, contact details, and emails.
+- Any exhibitor copied from the legacy/source database unless it has been deliberately generated as a synthetic `_Demo` row.
 - Entries, ticket allocations, calculated entries, results, not-benched records, late entries, special winners, archives, or copied show-year data.
 
 ## Files And Data Flow
@@ -43,8 +45,9 @@ The script will:
 2. Create a fresh SQLite destination database.
 3. Create the application schema using the existing Peewee models.
 4. Copy approved reference rows from the source into the destination.
-5. Leave operational/show-specific tables empty.
-6. Validate that blocked tables have zero rows in the destination.
+5. Create a small set of synthetic exhibitors with names ending in `_Demo`.
+6. Leave all other operational/show-specific tables empty.
+7. Validate that blocked tables have zero rows in the destination and that every starter exhibitor name ends with `_Demo`.
 
 Update `benchabird.spec` so PyInstaller packages:
 
@@ -79,7 +82,8 @@ Add tests or script-level checks for:
 - The starter DB file is created.
 - Required schema tables exist.
 - Reference tables such as `class_def`, `species`, and `main_class` are copied when present.
-- Operational tables are empty.
+- Operational tables other than the synthetic exhibitor rows are empty.
+- Every seeded exhibitor is synthetic and has a name ending in `_Demo`.
 - The source development DB is not modified.
 - `benchabird.spec` points at the starter DB, not the development DB.
 
@@ -89,4 +93,4 @@ The release checklist should document that the starter DB generation step must r
 
 The exact boundary between reference-only and show-specific tables should be verified against the current model list before implementation. Tables with names that sound reference-like but contain club-specific history must stay out of the starter DB unless explicitly approved.
 
-The current `main.py` first-launch behavior opens the import wizard when the exhibitor table is empty. Because the clean starter DB intentionally has no exhibitors, implementation should review whether that wizard should still open for starter releases or whether a clean starter DB should navigate directly to the welcome/setup flow. This is a product decision to confirm during planning.
+The current `main.py` first-launch behavior opens the import wizard when the exhibitor table is empty. The starter DB will include synthetic `_Demo` exhibitors, so the wizard should not open automatically for release users. This avoids a special runtime flag while keeping the starter database visibly non-real.
