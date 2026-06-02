@@ -37,13 +37,21 @@ def _faded_image_reader(logo_data, opacity: float = 0.14):
         return None
 
 
-def _make_qr_reader(exh_no, class_code):
+def _ticket_qr_payload(ticket: dict) -> str:
+    return (
+        f"AutoNum:{ticket.get('auto_num') or ticket.get('ticket_no') or ''} "
+        f"ExhNo:{ticket.get('exh_no') or ''} "
+        f"Class:{ticket.get('class_code') or ''}"
+    )
+
+
+def _make_qr_reader(ticket: dict):
     """Generate a QR code image reader for ReportLab embedding."""
     import qrcode
     from qrcode.image.pil import PilImage
     from reportlab.lib.utils import ImageReader
     import io as _io
-    data = f"ExhNo:{exh_no} Class:{class_code or ''}"
+    data = _ticket_qr_payload(ticket)
     qr = qrcode.QRCode(box_size=3, border=2,
                        error_correction=qrcode.constants.ERROR_CORRECT_L)
     qr.add_data(data)
@@ -121,7 +129,7 @@ def _draw_ticket(c, x: float, y: float, w: float, h: float,
 
     # ── QR code — top-right corner ───────────────────────────────
     try:
-        qr_img = _make_qr_reader(ticket['exh_no'], ticket['class_code'])
+        qr_img = _make_qr_reader(ticket)
         c.drawImage(qr_img, x + w - qr_size - pad,
                     y + h - qr_size - pad,
                     width=qr_size, height=qr_size, mask='auto')

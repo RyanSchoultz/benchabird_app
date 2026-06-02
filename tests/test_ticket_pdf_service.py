@@ -1,6 +1,6 @@
 # tests/test_ticket_pdf_service.py
 # No DB access — pure PDF generation test
-from services.ticket_pdf_service import generate_ticket_pdf
+from services.ticket_pdf_service import _ticket_qr_payload, generate_ticket_pdf
 
 SAMPLE_TICKETS = [
     {'ticket_no': 1, 'auto_num': 1, 'exh_no': 5,  'name': 'Adams, A.', 'class_code': 'SC01'},
@@ -13,6 +13,13 @@ def test_generate_ticket_pdf_returns_valid_pdf():
     pdf = generate_ticket_pdf(SAMPLE_TICKETS, show_name="Test Show 2024")
     assert isinstance(pdf, bytes)
     assert pdf[:4] == b'%PDF'
+
+
+def test_ticket_qr_payload_includes_auto_num():
+    payload = _ticket_qr_payload(SAMPLE_TICKETS[0])
+    assert "AutoNum:1" in payload
+    assert "ExhNo:5" in payload
+    assert "Class:SC01" in payload
 
 
 def test_generate_ticket_pdf_empty_list():
