@@ -4,6 +4,7 @@ import threading
 import customtkinter as ctk
 
 from models.reference import ShowDetails
+from views._exhibitor_bundle_dialog import ExhibitorBundleDialog
 
 
 class ReportsView(ctk.CTkFrame):
@@ -52,6 +53,7 @@ class ReportsView(ctk.CTkFrame):
             ("Address Tags", "benchabird_address_tags.pdf", self._gen_address_tags),
             ("Exhibitor List", "benchabird_exhibitor_list.pdf", self._gen_exhibitor_list),
             ("Entry Confirmation", "benchabird_entry_confirmation.pdf", self._gen_entry_confirmation),
+            ("Exhibitor Bundle", "benchabird_exhibitor_bundle.pdf", self._gen_exhibitor_bundle),
             (
                 "Results by Exhibitor",
                 "benchabird_results_by_exhibitor.pdf",
@@ -138,6 +140,9 @@ class ReportsView(ctk.CTkFrame):
         include_late = self._include_late.get()
         gen_fn = lambda sd: generate_entry_confirmation(sd=sd, include_late=include_late)
         self._save_and_open(gen_fn, "benchabird_entry_confirmation.pdf")
+
+    def _gen_exhibitor_bundle(self):
+        ExhibitorBundleDialog(self, self._get_sd(), self._show_preview)
 
     def _gen_results_by_exhibitor(self):
         from services.reports.results_by_exhibitor import generate_results_by_exhibitor

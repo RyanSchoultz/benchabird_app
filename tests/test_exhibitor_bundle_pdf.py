@@ -85,3 +85,9 @@ def test_exhibitor_bundle_dialog_imports():
     from views._exhibitor_bundle_dialog import ExhibitorBundleDialog
 
     assert ExhibitorBundleDialog.__name__ == "ExhibitorBundleDialog"
+
+
+def test_reports_view_imports_with_exhibitor_bundle():
+    from views.reports_view import ReportsView
+
+    assert ReportsView.__name__ == "ReportsView"
