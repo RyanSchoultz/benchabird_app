@@ -9,4 +9,3 @@ build/
 *.spec.bak
 .pytest_cache/
 .superpowers/
-**/docs
