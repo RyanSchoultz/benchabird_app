@@ -82,6 +82,12 @@ Benchabird aims to provide a cleaner, more approachable tool for managing the fu
 
 > Keep `benchabird.exe` and `benchabird.db` in the same folder. Moving only the exe will cause a fresh database to be created.
 
+**Windows SmartScreen warning:** because Benchabird is a small open-source tool without a paid code-signing certificate, Windows may show *"Windows protected your PC — Unknown publisher"* the first time you run it. This is normal for unsigned open-source software and does not mean the file is harmful.
+>
+> To run it: click **More info** → **Run anyway**. You only need to do this once.
+>
+> If you prefer to verify the file yourself, the source code is fully available in this repository.
+
 ### Option B — Run from Source
 
 ```bash
@@ -352,7 +358,7 @@ Permanently deletes all show-year data (entries, calculated entries, late entrie
 > Save an archive first.
 
 **Import Data:**
-Re-imports from the legacy Access MDB file. Overwrites exhibitors, classes, Hall of Fame, and brochure notes. Show entries are not affected. The MDB path is configured in `config.py`.
+Re-imports from a legacy Access MDB file. Overwrites exhibitors, classes, Hall of Fame, and brochure notes. Show entries are not affected. In the Import view, use the **Browse MDB…** button on the MDB File tab to select any `.mdb` or `.accdb` file.
 
 ---
 

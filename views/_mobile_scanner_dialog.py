@@ -92,7 +92,11 @@ class MobileScannerDialog(ctk.CTkToplevel):
         self._url_label.configure(
             text=f"{url}\nIf the phone cannot connect, check Wi-Fi and Windows Firewall."
         )
-        self._status.configure(text="Waiting for phone scans...")
+        self._status.configure(
+            text="⚠ Browser will show a security warning (self-signed cert).\n"
+                 "Tap 'Advanced' → 'Proceed' once — then the camera will work.",
+            text_color=("orange3", "orange"),
+        )
         self._show_qr(url)
         self._poll()
 
@@ -110,10 +114,16 @@ class MobileScannerDialog(ctk.CTkToplevel):
         if scan is not None:
             accepted = self._on_scan(scan.payload)
             if accepted:
-                self._status.configure(text=f"Accepted scan #{scan.exhibit_no}.")
+                self._status.configure(
+                    text=f"Accepted scan #{scan.exhibit_no}.",
+                    text_color=("gray10", "gray90"),
+                )
                 self._last_scan.configure(text=f"Last scan: #{scan.exhibit_no}")
             else:
-                self._status.configure(text="Scan received, but Results rejected it.")
+                self._status.configure(
+                    text="Scan received, but Results rejected it.",
+                    text_color=("gray10", "gray90"),
+                )
 
         error = self._receiver.pop_error()
         if error:

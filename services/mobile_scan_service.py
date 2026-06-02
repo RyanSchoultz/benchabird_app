@@ -1,4 +1,10 @@
-"""Local HTTP receiver for mobile companion QR scanning."""
+"""Local HTTPS receiver for mobile companion QR scanning.
+
+Serves over HTTPS using a per-session self-signed certificate so that
+Android/Chrome will allow camera access (getUserMedia is blocked on plain
+HTTP LAN addresses).  Users will see a one-time "Your connection is not
+private" warning and must tap Advanced → Proceed (or equivalent).
+"""
 
 from __future__ import annotations
 
@@ -6,14 +12,60 @@ from dataclasses import dataclass
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import html
+import ipaddress
 import queue
 import secrets
 import socket
+import ssl
+import tempfile
 import threading
+from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlencode, urlparse
 
 from services.scan_parser_service import ScanParseError, parse_scan_to_auto_num
+
+
+def _generate_self_signed_cert(ip: str) -> tuple[Path, Path]:
+    """Generate a temporary self-signed cert for *ip* and return (cert_path, key_path)."""
+    from cryptography import x509
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
+    from cryptography.x509.oid import NameOID
+    import datetime
+
+    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    subject = issuer = x509.Name([
+        x509.NameAttribute(NameOID.COMMON_NAME, "Benchabird Mobile"),
+    ])
+    san_list = [x509.DNSName("localhost")]
+    try:
+        san_list.append(x509.IPAddress(ipaddress.ip_address(ip)))
+    except ValueError:
+        pass
+
+    cert = (
+        x509.CertificateBuilder()
+        .subject_name(subject)
+        .issuer_name(issuer)
+        .public_key(key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
+        .not_valid_after(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1))
+        .add_extension(x509.SubjectAlternativeName(san_list), critical=False)
+        .sign(key, hashes.SHA256())
+    )
+
+    tmp_dir = Path(tempfile.mkdtemp(prefix="benchabird_ssl_"))
+    cert_path = tmp_dir / "cert.pem"
+    key_path = tmp_dir / "key.pem"
+    cert_path.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
+    key_path.write_bytes(key.private_bytes(
+        serialization.Encoding.PEM,
+        serialization.PrivateFormat.TraditionalOpenSSL,
+        serialization.NoEncryption(),
+    ))
+    return cert_path, key_path
 
 
 class MobileScanError(RuntimeError):
@@ -215,6 +267,8 @@ class MobileScanReceiver:
         self._thread: threading.Thread | None = None
         self._scans: queue.Queue[MobileScanEvent] = queue.Queue()
         self._errors: queue.Queue[str] = queue.Queue()
+        self._ssl_cert: Path | None = None
+        self._ssl_key: Path | None = None
 
     @property
     def is_running(self) -> bool:
@@ -225,7 +279,7 @@ class MobileScanReceiver:
         if self._server is None:
             raise MobileScanError("Mobile scanner receiver is not running.")
         port = self._server.server_address[1]
-        return f"http://{self.display_host}:{port}"
+        return f"https://{self.display_host}:{port}"
 
     @property
     def url(self) -> str:
@@ -241,6 +295,21 @@ class MobileScanReceiver:
             raise MobileScanError(
                 f"Could not start mobile scanner receiver: {exc}"
             ) from exc
+        # Wrap with SSL so the browser allows camera access.
+        try:
+            self._ssl_cert, self._ssl_key = _generate_self_signed_cert(self.display_host)
+            ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            ctx.load_cert_chain(str(self._ssl_cert), str(self._ssl_key))
+            self._server.socket = ctx.wrap_socket(
+                self._server.socket, server_side=True
+            )
+        except Exception as exc:
+            # SSL unavailable — fall back to plain HTTP with a warning
+            self._ssl_cert = self._ssl_key = None
+            self._errors.put(
+                f"SSL unavailable ({exc}); camera will be blocked by the browser. "
+                "Use the text field instead."
+            )
         self._thread = threading.Thread(
             target=self._server.serve_forever,
             name="BenchabirdMobileScanReceiver",
@@ -258,6 +327,15 @@ class MobileScanReceiver:
             server.server_close()
         if thread is not None and thread.is_alive():
             thread.join(timeout=2)
+        # Clean up temporary cert files
+        for p in (self._ssl_cert, self._ssl_key):
+            if p and p.exists():
+                try:
+                    p.unlink()
+                    p.parent.rmdir()
+                except OSError:
+                    pass
+        self._ssl_cert = self._ssl_key = None
 
     def pop_scan(self) -> MobileScanEvent | None:
         try:
