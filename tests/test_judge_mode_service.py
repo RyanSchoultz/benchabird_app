@@ -65,3 +65,9 @@ def test_toggle_judge_not_benched_marks_then_unmarks(test_db):
 
     assert marked.not_benched is True
     assert unmarked.not_benched is False
+
+
+def test_judge_mode_dialog_imports():
+    from views._judge_mode_dialog import JudgeModeDialog
+
+    assert JudgeModeDialog.__name__ == "JudgeModeDialog"
