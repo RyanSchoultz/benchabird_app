@@ -8,6 +8,7 @@ from services.not_benched_service import (
     mark_not_benched, unmark_not_benched, get_not_benched_set, is_not_benched,
 )
 from views._paginated_table import PaginatedTable
+from views._webcam_scanner_dialog import WebcamScannerDialog
 
 _repo = ResultsRepo()
 
@@ -56,6 +57,9 @@ class ResultsView(ctk.CTkFrame):
         ctk.CTkButton(form, text="Not Benched", width=110,
                       fg_color=("gray75", "gray35"), text_color=("gray10", "gray90"),
                       command=self._toggle_not_benched).pack(side="left", padx=4, pady=8)
+        ctk.CTkButton(form, text="Scan QR", width=90,
+                      fg_color=("gray75", "gray35"), text_color=("gray10", "gray90"),
+                      command=self._open_webcam_scanner).pack(side="left", padx=4, pady=8)
         self._msg = ctk.CTkLabel(form, text="", font=ctk.CTkFont(size=11),
                                   text_color=("gray40", "gray60"))
         self._msg.pack(side="left", padx=12)
@@ -116,16 +120,14 @@ class ResultsView(ctk.CTkFrame):
             text=f"{len(data)} of {total}" if q else f"{total} results"
         )
 
-    def _parse_exhibit_entry(self):
-        raw = self._exh_entry.get().strip()
+    def _resolve_scan_text(self, raw):
         try:
             return parse_scan_to_auto_num(raw)
         except ScanParseError as exc:
             self._msg.configure(text=str(exc))
             return None
 
-    def _accept_exhibit_entry(self):
-        exhibit_no = self._parse_exhibit_entry()
+    def _set_resolved_exhibit(self, exhibit_no):
         if exhibit_no is None:
             return "break"
         self._exh_entry.delete(0, "end")
@@ -133,6 +135,23 @@ class ResultsView(ctk.CTkFrame):
         self._msg.configure(text=f"Scan ready: #{exhibit_no}")
         self._result_combo.focus()
         return "break"
+
+    def _parse_exhibit_entry(self):
+        raw = self._exh_entry.get().strip()
+        return self._resolve_scan_text(raw)
+
+    def _accept_exhibit_entry(self):
+        return self._set_resolved_exhibit(self._parse_exhibit_entry())
+
+    def _open_webcam_scanner(self):
+        WebcamScannerDialog(self, self._accept_webcam_payload)
+
+    def _accept_webcam_payload(self, payload):
+        exhibit_no = self._resolve_scan_text(payload)
+        if exhibit_no is None:
+            return False
+        self._set_resolved_exhibit(exhibit_no)
+        return True
 
     def _save_result(self):
         exhibit_no = self._parse_exhibit_entry()
