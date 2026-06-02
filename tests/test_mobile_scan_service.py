@@ -136,3 +136,9 @@ def test_receiver_raises_clear_error_when_start_fails():
 
     with pytest.raises(MobileScanError, match="Could not start mobile scanner receiver"):
         receiver.start()
+
+
+def test_mobile_scanner_dialog_imports():
+    from views._mobile_scanner_dialog import MobileScannerDialog
+
+    assert MobileScannerDialog.__name__ == "MobileScannerDialog"
