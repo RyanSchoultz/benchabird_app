@@ -48,12 +48,12 @@ Benchabird aims to provide a cleaner, more approachable tool for managing the fu
 |---|---|
 | **Dashboard** | Live snapshot of show progress: entry count, result coverage, workflow status checklist, top exhibitors bar chart, quick-navigation buttons |
 | **Show Setup** | Show name, date, club details in English and Afrikaans. Upload club logo — stored in the database and applied as a watermark on all PDFs |
-| **Search** | Global search across exhibitors, entries, results, and special winners. Per-view filter bars on every table |
+| **Search** | Global search across exhibitors, entries, results, and special winners. Per-view filter bars on every table, with a short debounce while typing |
 | **Exhibitors** | Full CRUD with live search. Toggle address-label inclusion per exhibitor. Import from CSV/Excel. Export filtered list to CSV or Excel |
 | **Entries** | Raw and calculated entry views. Add individually, bulk-add by exhibitor, bulk rename classes, bulk delete or reassign. Per-class entry limits. Export to CSV or Excel |
 | **Late Entries** | Separate tracking for post-deadline entries |
 | **Calculate** | Assigns sequential ticket numbers to all entries. Run after adding entries, before printing tickets |
-| **Results** | Rapid-entry mode: enter or scan exhibit number/QR payload → result dropdown → save. Supports manual entry, USB scanners, desktop webcam QR scanning, and local mobile companion scanning. Mark Not Benched. Export to CSV or Excel |
+| **Results** | Rapid-entry mode: enter or scan exhibit number/QR payload -> result dropdown -> save. Supports manual entry, USB scanners, desktop webcam QR scanning, and local mobile companion lookup/save. Mark Not Benched. Export to CSV or Excel |
 | **Special Winners** | Assign special prize winners by exhibit number |
 | **Special Prizes** | Manage the prize list: description, trophy type, cash amounts |
 | **Tickets** | Preview and print cage tickets as PDF. Each ticket has exhibit #, class, exhibitor name, QR code, and club logo watermark |
@@ -207,8 +207,8 @@ Typical order of operations for running a show:
 - Cage-ticket QR codes include `AutoNum:<ticket> ExhNo:<exhibitor> Class:<code>`
 - **USB scanner:** click `Exhibit #`, scan the ticket QR, then choose the result. Most USB barcode/QR scanners act like keyboards.
 - **Desktop webcam:** click `Scan QR`, hold the cage-ticket QR code in front of the desktop webcam, then choose the result once the scan is accepted.
-- **Mobile companion:** click `Mobile Scan` to start a temporary local receiver. Scan the pairing QR with a phone on the same Wi-Fi/network, then use the phone page to scan ticket QRs. Accepted scans fill `Exhibit #` on the desktop and move focus to Result.
-- The mobile companion does not save results from the phone. The desktop operator still chooses the placing and presses Enter to save.
+- **Mobile companion:** click `Mobile Scan` to start a temporary local receiver. Scan the pairing QR with a phone on the same Wi-Fi/network, then use the phone page to scan ticket QRs, view exhibit details, choose a placing, mark Not Benched, clear a placing, or send the raw scan back to the desktop.
+- When a result is saved from the phone, the desktop Results table refreshes and records the save without stealing focus from the mobile workflow. When `Send Raw Scan to Desktop` is used, the older desktop flow still fills `Exhibit #` and moves focus to Result.
 
 **Judge Mode:**
 - Click `Judge Mode` for a streamlined steward/operator entry screen
@@ -290,9 +290,10 @@ All reports include show name, date, club name, and the club logo watermark (if 
 - Searches exhibitors, entries, calculated entries, results, and special winners simultaneously
 - Results grouped by category (up to 8 per category) with a "View all →" link if there are more
 - Each result has a `→` button to navigate directly to that record in its view
+- Searches run after typing pauses for about 3 seconds.
 
 **Per-view filters:**
-Every table has a filter bar below the toolbar. Type to filter live; click `✕` to clear. The status bar shows the count of visible vs total rows.
+Every table has a filter bar below the toolbar. Type to filter; click `✕` to clear. Results filtering waits about 3 seconds after typing pauses before refreshing the table. The status bar shows the count of visible vs total rows.
 
 ---
 
@@ -504,7 +505,7 @@ benchabird_app/
 │   ├── export_service.py
 │   ├── archive_service.py
 │   ├── search_service.py
-│   ├── mobile_scan_service.py  # Local HTTP receiver for mobile QR scanning
+│   ├── mobile_scan_service.py  # Local HTTPS/HTTP receiver for mobile QR scanning
 │   ├── webcam_scan_service.py  # Optional OpenCV webcam QR scanning
 │   └── reports/                # One module per PDF report
 │       ├── base.py             # Shared canvas, header, watermark helper

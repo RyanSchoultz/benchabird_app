@@ -22,6 +22,7 @@ class ResultsView(ctk.CTkFrame):
         super().__init__(parent, fg_color="transparent")
         self._all_results: list = []
         self._nb_set: set = set()
+        self._filter_after_id = None
         self._build()
 
     def _build(self):
@@ -81,7 +82,7 @@ class ResultsView(ctk.CTkFrame):
         filter_bar = ctk.CTkFrame(self, fg_color="transparent")
         filter_bar.grid(row=2, column=0, sticky="ew", padx=16, pady=(0, 2))
         self._filter_var = ctk.StringVar()
-        self._filter_var.trace_add("write", lambda *_: self._apply_filter())
+        self._filter_var.trace_add("write", lambda *_: self._schedule_filter())
         ctk.CTkEntry(filter_bar, textvariable=self._filter_var,
                      placeholder_text="Filter by exhibit # or result…", width=260).pack(side="left")
         ctk.CTkButton(filter_bar, text="✕", width=28, height=28,
@@ -109,7 +110,13 @@ class ResultsView(ctk.CTkFrame):
         self._all_results = [(r.exhibit_no, [str(r.exhibit_no), r.result or ""]) for r in results]
         self._apply_filter()
 
+    def _schedule_filter(self):
+        if self._filter_after_id:
+            self.after_cancel(self._filter_after_id)
+        self._filter_after_id = self.after(3000, self._apply_filter)
+
     def _apply_filter(self):
+        self._filter_after_id = None
         q = self._filter_var.get().strip().lower()
         data = [r for r in self._all_results if not q or any(q in c.lower() for c in r[1])]
         nb_set = self._nb_set
@@ -164,10 +171,14 @@ class ResultsView(ctk.CTkFrame):
     def _open_mobile_scanner(self):
         MobileScannerDialog(self, self._accept_mobile_payload)
 
-    def _accept_mobile_payload(self, payload):
+    def _accept_mobile_payload(self, payload, result=None):
         exhibit_no = self._resolve_scan_text(payload)
         if exhibit_no is None:
             return False
+        if result is not None:
+            self._reload_table()
+            self._msg.configure(text=f"Mobile saved: #{exhibit_no} as {result}")
+            return True
         self._set_resolved_exhibit(exhibit_no)
         # Bring the main window to the front so the operator can see
         # the exhibit # field and choose a result. The scanner dialog

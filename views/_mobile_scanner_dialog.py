@@ -112,10 +112,11 @@ class MobileScannerDialog(ctk.CTkToplevel):
 
         scan = self._receiver.pop_scan()
         if scan is not None:
-            accepted = self._on_scan(scan.payload)
+            accepted = self._on_scan(scan.payload, scan.result)
             if accepted:
+                action = f"saved {scan.result}" if scan.result else "accepted"
                 self._status.configure(
-                    text=f"Accepted scan #{scan.exhibit_no}.",
+                    text=f"Mobile {action} #{scan.exhibit_no}.",
                     text_color=("gray10", "gray90"),
                 )
                 self._last_scan.configure(text=f"Last scan: #{scan.exhibit_no}")

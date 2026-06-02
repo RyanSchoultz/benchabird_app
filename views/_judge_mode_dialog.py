@@ -119,7 +119,19 @@ class JudgeModeDialog(ctk.CTkToplevel):
         self._show_context(ctx)
         return "break"
 
-    def _accept_payload(self, payload):
+    def _accept_payload(self, payload, result=None):
+        if result is not None:
+            try:
+                ctx = resolve_judge_entry(
+                    payload,
+                    class_filter=self._class_entry.get(),
+                )
+            except JudgeModeError as exc:
+                self._current_auto_num = None
+                self._context.configure(text=str(exc))
+                return False
+            self._after_change(ctx, result, focus_scan=False)
+            return True
         self._scan_entry.delete(0, "end")
         self._scan_entry.insert(0, payload)
         self._resolve_scan()
@@ -156,12 +168,13 @@ class JudgeModeDialog(ctk.CTkToplevel):
         ctx = toggle_judge_not_benched(self._current_auto_num)
         self._after_change(ctx, "NB" if ctx.not_benched else "NB removed")
 
-    def _after_change(self, ctx, label):
+    def _after_change(self, ctx, label, focus_scan=True):
         self._show_context(ctx)
         self._recent.insert(0, f"#{ctx.auto_num} {ctx.class_code or ''}: {label}")
         self._recent = self._recent[:6]
         self._recent_label.configure(text="Recent:\n" + "\n".join(self._recent))
-        self._scan_entry.delete(0, "end")
-        self._scan_entry.focus()
+        if focus_scan:
+            self._scan_entry.delete(0, "end")
+            self._scan_entry.focus()
         if self._on_changed:
             self._on_changed()

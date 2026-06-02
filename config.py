@@ -21,4 +21,4 @@ MDB_CONN_STR = (
 )
 
 APP_NAME = "Benchabird Show Manager"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.0.1"

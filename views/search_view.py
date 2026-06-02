@@ -52,7 +52,7 @@ class SearchView(ctk.CTkFrame):
         if not q:
             self._show_hint("Type to search across all show data…")
             return
-        self._after_id = self.after(220, lambda: self._run_search(q))
+        self._after_id = self.after(3000, lambda: self._run_search(q))
 
     def _run_search(self, q: str):
         from services.search_service import global_search
