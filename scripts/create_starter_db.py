@@ -16,7 +16,7 @@ from models.exhibitor import Exhibitor
 from models.reference import ShowDetails
 
 DEFAULT_SOURCE = ROOT / "benchabird.db"
-DEFAULT_DEST = ROOT / "release" / "benchabird-starter.db"
+DEFAULT_DEST = ROOT / "release" / "benchabird.db"
 
 REFERENCE_TABLES = ("class_def", "species", "main_class")
 EMPTY_TABLES = (

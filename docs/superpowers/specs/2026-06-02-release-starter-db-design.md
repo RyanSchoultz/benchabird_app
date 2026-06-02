@@ -33,7 +33,7 @@ Exclude:
 
 Add a generated starter DB file outside the development DB path, preferably:
 
-`release/benchabird-starter.db`
+`release/benchabird.db`
 
 Add a script:
 
@@ -51,7 +51,7 @@ The script will:
 
 Update `benchabird.spec` so PyInstaller packages:
 
-`release/benchabird-starter.db` as `benchabird.db`
+`release/benchabird.db` as `benchabird.db`
 
 The runtime app does not need to know about the starter file. Existing first-run behavior already copies bundled `benchabird.db` beside the executable when no user database exists.
 

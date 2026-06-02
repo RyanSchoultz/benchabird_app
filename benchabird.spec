@@ -10,7 +10,7 @@ a = Analysis(
     binaries=[],
     datas=[
         (ctk_path, 'customtkinter/'),
-        ('benchabird.db', '.'),
+        ('release/benchabird.db', '.'),
         ('logo.png', '.'),
         ('icon.ico', '.'),
     ],

@@ -363,16 +363,25 @@ Tests use an in-memory SQLite database — the real database file is never touch
 From inside `benchabird_app/`:
 
 ```bash
+python scripts/create_starter_db.py
 python -m PyInstaller benchabird.spec --clean
 ```
 
 Output: `dist/benchabird.exe` — single-file Windows executable (~50 MB).
 
+The first command creates `release/benchabird.db`, a clean release starter
+database. Local development still uses the root `benchabird.db`, so you can keep
+working with imported legacy data while release builds ship a fresh starter DB.
+The starter DB contains reference classes/categories plus synthetic exhibitors
+whose names end with `_Demo`; it excludes real exhibitors, entries, results, and
+historical show data.
+
 **Build requirements:**
 - `pyinstaller >= 6.0.0`
 - All packages in `requirements.txt` installed in the active Python environment
 - `benchabird_app/logo.png` and `benchabird_app/icon.ico` present (bundled via spec)
-- `benchabird_app/benchabird.db` present (seed database, copied on first launch)
+- `benchabird_app/benchabird.db` present for local development/source reference
+- `benchabird_app/release/benchabird.db` generated before building (starter database, copied on first launch)
 
 The spec file (`benchabird.spec`) handles all data bundling and hidden imports automatically.
 
@@ -388,7 +397,8 @@ benchabird_app/
 ├── requirements.txt
 ├── logo.png                    # Bundled club logo
 ├── icon.ico                    # App icon
-├── benchabird.db               # Seed database (pre-populated, bundled into exe)
+├── benchabird.db               # Local development database
+├── release/benchabird.db       # Generated clean starter database for releases
 │
 ├── models/                     # Peewee ORM models (SQLite)
 │   ├── database.py             # SqliteDatabase + BaseModel

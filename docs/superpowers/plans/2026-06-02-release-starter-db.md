@@ -4,7 +4,7 @@
 
 **Goal:** Build a release-only starter database flow that bundles a clean DB with synthetic `_Demo` exhibitors while preserving the local development DB.
 
-**Architecture:** Add a focused script that creates `release/benchabird-starter.db` from the current schema and safe reference data. Update PyInstaller packaging to bundle that starter artifact as `benchabird.db`. Tests validate the generated database contract and packaging path.
+**Architecture:** Add a focused script that creates `release/benchabird.db` from the current schema and safe reference data. Update PyInstaller packaging to bundle that starter artifact as `benchabird.db`. Tests validate the generated database contract and packaging path.
 
 **Tech Stack:** Python, SQLite, Peewee models, pytest, PyInstaller spec
 
@@ -14,9 +14,9 @@
 
 | File | Action | Responsibility |
 |---|---|---|
-| `scripts/create_starter_db.py` | Create | Generate and validate the release starter DB without mutating `benchabird.db` |
+| `scripts/create_starter_db.py` | Create | Generate and validate the release starter DB without mutating local `benchabird.db` |
 | `tests/test_create_starter_db.py` | Create | Verify starter DB contents and source DB preservation |
-| `benchabird.spec` | Modify | Bundle `release/benchabird-starter.db` as `benchabird.db` |
+| `benchabird.spec` | Modify | Bundle `release/benchabird.db` as `benchabird.db` |
 | `README.md` | Modify | Document the release DB generation step and local/dev DB separation |
 | `release/.gitignore` | Create | Keep generated starter DB out of git while preserving the release directory |
 
@@ -46,7 +46,7 @@ The module should expose:
 
 ```python
 DEFAULT_SOURCE = ROOT / "benchabird.db"
-DEFAULT_DEST = ROOT / "release" / "benchabird-starter.db"
+DEFAULT_DEST = ROOT / "release" / "benchabird.db"
 REFERENCE_TABLES = ("class_def", "species", "main_class")
 EMPTY_TABLES = (
     "show_entry", "calculated_entry", "late_entry", "result", "not_benched",
@@ -82,7 +82,7 @@ Expected: all starter DB script tests pass.
 
 Run: `python scripts/create_starter_db.py`
 
-Expected: `release/benchabird-starter.db` is created and validation output reports demo exhibitors and empty operational tables.
+Expected: `release/benchabird.db` is created and validation output reports demo exhibitors and empty operational tables.
 
 - [ ] **Step 4: Commit**
 
@@ -106,7 +106,7 @@ Change the data bundle entry from:
 to:
 
 ```python
-('release/benchabird-starter.db', 'benchabird.db'),
+('release/benchabird.db', '.'),
 ```
 
 - [ ] **Step 2: Add release directory gitignore**
@@ -123,7 +123,7 @@ Create `release/.gitignore`:
 Document:
 
 - Local development still uses `benchabird.db`.
-- Releases use `release/benchabird-starter.db`.
+- Releases use `release/benchabird.db`.
 - Run `python scripts/create_starter_db.py` before `python -m PyInstaller benchabird.spec --clean`.
 - The starter DB contains reference classes/categories and synthetic `_Demo` exhibitors only.
 
