@@ -27,6 +27,12 @@ def test_import_show_details(test_db):
     assert sd.show_eng == "Open Show"
     assert sd.club_eng_full == "Cape Town Bird Club"
 
+def test_import_classes_leave_judge_blank(test_db):
+    from services.import_service import import_from_mdb
+    from models.class_def import ClassDef
+    import_from_mdb()
+    assert ClassDef.select().where(ClassDef.judge.is_null(False)).count() == 0
+
 def test_import_is_idempotent(test_db):
     from services.import_service import import_from_mdb
     import_from_mdb()

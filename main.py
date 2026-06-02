@@ -20,6 +20,7 @@ def _migrate_db():
         "ALTER TABLE show_details ADD COLUMN logo_path VARCHAR(500)",
         "ALTER TABLE show_details ADD COLUMN logo_data BLOB",
         "ALTER TABLE class_def ADD COLUMN entry_limit INTEGER",
+        "ALTER TABLE class_def ADD COLUMN judge VARCHAR(100)",
     ]:
         try:
             database.execute_sql(sql)

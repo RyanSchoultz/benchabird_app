@@ -18,6 +18,11 @@ def test_class_def_create(test_db):
     cd = ClassDef.create(class_code="G82", bird_type="CANARY", class_seq=10)
     assert ClassDef.get(ClassDef.class_code == "G82").bird_type == "CANARY"
 
+def test_class_def_judge_create(test_db):
+    from models.class_def import ClassDef
+    ClassDef.create(class_code="J01", bird_type="CANARY", judge="Jane Judge")
+    assert ClassDef.get(ClassDef.class_code == "J01").judge == "Jane Judge"
+
 def test_special_winner_create(test_db):
     from models.special import SpecialWinner
     sw = SpecialWinner.create(special_nr="RF05", exhibit_no=407, result="Special")

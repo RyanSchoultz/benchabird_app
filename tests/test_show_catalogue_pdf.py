@@ -19,3 +19,11 @@ def test_generate_show_catalogue_with_data(test_db):
     pdf = generate_show_catalogue()
     assert pdf[:4] == b'%PDF'
     assert len(pdf) > 2000
+
+
+def test_generate_show_catalogue_with_judge(test_db):
+    ClassDef.create(class_code="SC01", bird_type="Canary", class_seq=1, judge="Jane Judge")
+    CalculatedEntry.create(auto_num=1, exh_no=10, name="Alice", class_code="SC01")
+    pdf = generate_show_catalogue()
+    assert pdf[:4] == b'%PDF'
+    assert len(pdf) > 2000

@@ -15,7 +15,8 @@ COL_NAME   = MARGIN + 48 * mm
 def generate_show_catalogue(sd=None) -> bytes:
     sql = """
         SELECT ce.auto_num, ce.exh_no, ce.name, ce.class_code,
-               COALESCE(cd.bird_type, ''), CAST(COALESCE(cd.class_seq, 0) AS REAL)
+               COALESCE(cd.bird_type, ''), COALESCE(cd.judge, ''),
+               CAST(COALESCE(cd.class_seq, 0) AS REAL)
         FROM calculated_entry ce
         LEFT JOIN class_def cd ON ce.class_code = cd.class_code
         ORDER BY CAST(COALESCE(cd.class_seq, 0) AS REAL), ce.exh_no
@@ -28,7 +29,7 @@ def generate_show_catalogue(sd=None) -> bytes:
     y = draw_page_header(c, "Show Catalogue", sd)
     last_class = None
 
-    for auto_num, exh_no, name, class_code, bird_type, _ in rows:
+    for auto_num, exh_no, name, class_code, bird_type, judge, _ in rows:
         if y < MARGIN + ROW_H * 3:
             draw_footer(c, page_num)
             c.showPage()
@@ -41,6 +42,9 @@ def generate_show_catalogue(sd=None) -> bytes:
             c.setFont("Helvetica-Bold", 10)
             label = f"{class_code}  {bird_type}" if bird_type else class_code or ""
             c.drawString(MARGIN, y, label)
+            if judge:
+                c.setFont("Helvetica", 8)
+                c.drawRightString(PAGE_W - MARGIN, y, f"Judge: {judge}")
             c.setLineWidth(0.4)
             c.line(MARGIN, y - 1, PAGE_W - MARGIN, y - 1)
             y -= ROW_H + 2

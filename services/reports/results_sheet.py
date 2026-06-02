@@ -7,17 +7,19 @@ from services.reports.base import (
     MARGIN, PAGE_W, ROW_H,
 )
 
-COL_X = [MARGIN, MARGIN + 18*mm, MARGIN + 55*mm, MARGIN + 110*mm, MARGIN + 140*mm]
-HEADERS = ["Ticket #", "Exh #", "Name", "Class", "Result"]
+COL_X = [MARGIN, MARGIN + 18*mm, MARGIN + 48*mm, MARGIN + 96*mm, MARGIN + 118*mm, MARGIN + 148*mm]
+HEADERS = ["Ticket #", "Exh #", "Name", "Class", "Result", "Judge"]
 
 
 def generate_results_sheet(sd=None) -> bytes:
     sql = """
         SELECT r.exhibit_no, COALESCE(ce.exh_no, ''), COALESCE(ce.name, ''),
                COALESCE(ce.class_code, ''), COALESCE(r.result, ''),
+               COALESCE(cd.judge, ''),
                CASE WHEN nb.exhibit_no IS NOT NULL THEN 'NB' ELSE '' END
         FROM result r
         LEFT JOIN calculated_entry ce ON r.exhibit_no = ce.auto_num
+        LEFT JOIN class_def cd ON ce.class_code = cd.class_code
         LEFT JOIN not_benched nb ON r.exhibit_no = nb.exhibit_no
         ORDER BY r.exhibit_no
     """
@@ -29,7 +31,7 @@ def generate_results_sheet(sd=None) -> bytes:
     y = draw_page_header(c, "Results Sheet", sd)
     y = _draw_col_headers(c, y)
 
-    for exhibit_no, exh_no, name, class_code, result, nb_flag in rows:
+    for exhibit_no, exh_no, name, class_code, result, judge, nb_flag in rows:
         if y < MARGIN + ROW_H:
             draw_footer(c, page_num)
             c.showPage()
@@ -38,7 +40,7 @@ def generate_results_sheet(sd=None) -> bytes:
             y = _draw_col_headers(c, y)
 
         c.setFont("Helvetica", 9)
-        vals = [str(exhibit_no), str(exh_no), name[:35], class_code, result]
+        vals = [str(exhibit_no), str(exh_no), name[:30], class_code, result, judge[:18]]
         for x, val in zip(COL_X, vals):
             c.drawString(x, y, val)
 

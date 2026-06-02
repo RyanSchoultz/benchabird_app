@@ -96,6 +96,7 @@ def _classes(conn, cb) -> int:
         'colour':     _n(r.get('COLOUR')),
         'afrbesk':    _n(r.get('AFRBESK')),
         'entry_limit': None,
+        'judge':      None,
     } for r in rows])
 
 
