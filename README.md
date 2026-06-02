@@ -169,9 +169,11 @@ Typical order of operations for running a show:
 - Cage-ticket QR codes include `AutoNum:<ticket> ExhNo:<exhibitor> Class:<code>`
 - A USB barcode/QR scanner can be used like a keyboard: click `Exhibit #`, scan the ticket, then choose the result
 - Click `Scan QR` to use a local desktop webcam. A successful scan fills `Exhibit #` and moves focus to Result
+- Click `Mobile Scan` to start a local companion receiver. Scan the pairing QR with a phone on the same Wi-Fi/network, then scan ticket QRs from the phone companion page. Accepted scans fill `Exhibit #` on the desktop and move focus to Result
+- Mobile live camera scanning depends on phone/browser security rules. If the browser blocks camera access over the local network, use the companion page's text field with a phone QR scanner app or pasted payload
+- If the phone cannot connect, check that both devices are on the same network and that Windows Firewall allows the Benchabird app to accept local connections
 - Pasted/scanned legacy QR text with `ExhNo:<n> Class:<code>` is still accepted when it uniquely matches a calculated entry
 - If OpenCV or a webcam is unavailable, manual and USB scanner entry still work
-- A lightweight mobile companion scanner is planned as a follow-on stage
 
 **Not Benched:**
 - Type the exhibit number, click `Not Benched`
@@ -438,6 +440,7 @@ benchabird_app/
 │   ├── archive_service.py      # DB snapshot save / restore
 │   ├── search_service.py       # Global multi-table search
 │   ├── scan_parser_service.py  # QR/barcode scan parsing for results entry
+│   ├── mobile_scan_service.py  # Local HTTP receiver for mobile QR scanning
 │   ├── webcam_scan_service.py  # Optional OpenCV webcam QR scanning
 │   └── reports/                # One module per PDF report
 │       ├── base.py             # Shared canvas, header, watermark helper
@@ -467,6 +470,7 @@ benchabird_app/
 │   ├── archive_view.py         # Snapshot save / restore
 │   ├── sql_editor_view.py      # Direct SQL with scrollable results
 │   ├── help_view.py            # In-app how-to guide (tabbed)
+│   ├── _mobile_scanner_dialog.py # Pairing QR/status dialog for phone scanner
 │   ├── _paginated_table.py     # Reusable paginated table (50 rows/page, loading state)
 │   ├── pdf_preview_window.py   # In-app PDF preview (Print, Save As)
 │   ├── _bulk_edit_dialog.py    # Bulk add / rename / delete / reassign entries
@@ -496,6 +500,7 @@ SQLite via Peewee ORM. Schema migrations run silently on startup via `ALTER TABL
 | `Pillow` | ≥ 10.0 | Image handling — logo loading, watermark blending |
 | `qrcode[pil]` | ≥ 7.4 | QR code generation embedded in cage tickets |
 | `opencv-python` | ≥ 4.10 | Optional desktop webcam QR scanning |
+| Python stdlib HTTP server | bundled | Local mobile companion scan receiver |
 | `pandas` | ≥ 2.0 | CSV and Excel export via `openpyxl` |
 | `pyodbc` | ≥ 5.0 | Legacy Access MDB import |
 | `pyinstaller` | ≥ 6.0 | Single-file Windows executable packaging |
