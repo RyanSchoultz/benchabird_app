@@ -3,6 +3,7 @@ import csv
 import threading
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
+from pathlib import Path
 from config import MDB_PATH
 from models.exhibitor import Exhibitor
 from models.show_entry import ShowEntry
@@ -82,12 +83,29 @@ class ReImportView(ctk.CTkFrame):
         parent.grid_columnconfigure(0, weight=1)
         parent.grid_rowconfigure(4, weight=1)
 
-        ctk.CTkLabel(
-            parent, text=f"Source: {MDB_PATH}",
+        # Pre-fill with config path if it exists, otherwise blank
+        self._mdb_selected = MDB_PATH if MDB_PATH.exists() else None
+
+        # ── File picker ──────────────────────────────────────────────
+        file_row = ctk.CTkFrame(parent, fg_color="transparent")
+        file_row.grid(row=0, column=0, sticky="ew", padx=4, pady=(4, 12))
+        file_row.grid_columnconfigure(0, weight=1)
+
+        self._mdb_path_lbl = ctk.CTkLabel(
+            file_row,
+            text=str(self._mdb_selected) if self._mdb_selected else "No MDB file selected",
             font=ctk.CTkFont(size=11),
-            text_color=("gray40", "gray60"),
-            wraplength=700, justify="left",
-        ).grid(row=0, column=0, sticky="w", padx=4, pady=(4, 12))
+            text_color=("gray20", "gray80") if self._mdb_selected else ("gray45", "gray55"),
+            anchor="w",
+            wraplength=580,
+            justify="left",
+        )
+        self._mdb_path_lbl.grid(row=0, column=0, sticky="w", padx=(0, 8))
+
+        ctk.CTkButton(
+            file_row, text="Browse MDB…", width=120,
+            command=self._mdb_browse,
+        ).grid(row=0, column=1, sticky="e")
 
         counts_frame = ctk.CTkFrame(parent, fg_color=("gray88", "gray20"), corner_radius=8)
         counts_frame.grid(row=1, column=0, sticky="ew", padx=4, pady=(0, 12))
@@ -119,11 +137,6 @@ class ReImportView(ctk.CTkFrame):
             wraplength=700, justify="left",
         ).grid(row=2, column=0, sticky="w", padx=4, pady=(0, 8))
 
-        if not MDB_PATH.exists():
-            ctk.CTkLabel(parent, text=f"⚠ MDB file not found at: {MDB_PATH}",
-                         text_color=("red4", "tomato")).grid(
-                row=3, column=0, sticky="w", padx=4, pady=(0, 8))
-
         self._mdb_log = ctk.CTkTextbox(
             parent, state="disabled", height=160,
             font=ctk.CTkFont(family="Courier New", size=11),
@@ -138,7 +151,7 @@ class ReImportView(ctk.CTkFrame):
 
         self._mdb_btn = ctk.CTkButton(
             parent, text="Import from MDB", width=200, height=38,
-            state="normal" if MDB_PATH.exists() else "disabled",
+            state="normal" if self._mdb_selected else "disabled",
             command=self._mdb_start,
         )
         self._mdb_btn.grid(row=6, column=0, pady=(0, 8))
@@ -148,6 +161,20 @@ class ReImportView(ctk.CTkFrame):
         self._mdb_log.insert("end", msg + "\n")
         self._mdb_log.configure(state="disabled")
         self._mdb_log.see("end")
+
+    def _mdb_browse(self):
+        path = filedialog.askopenfilename(
+            title="Select Access MDB file",
+            filetypes=[("Access Database", "*.mdb *.accdb"), ("All files", "*.*")],
+        )
+        if not path:
+            return
+        self._mdb_selected = Path(path)
+        self._mdb_path_lbl.configure(
+            text=path,
+            text_color=("gray20", "gray80"),
+        )
+        self._mdb_btn.configure(state="normal")
 
     def _mdb_start(self):
         self._mdb_log.configure(state="normal")
@@ -163,7 +190,8 @@ class ReImportView(ctk.CTkFrame):
         try:
             from services.import_service import import_from_mdb
             results = import_from_mdb(
-                progress=lambda msg: self.after(0, lambda m=msg: self._mdb_log_append(m))
+                progress=lambda msg: self.after(0, lambda m=msg: self._mdb_log_append(m)),
+                mdb_path=str(self._mdb_selected) if self._mdb_selected else None,
             )
             total = sum(results.values())
             self.after(0, lambda: self._mdb_done(results, total))

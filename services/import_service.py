@@ -15,9 +15,16 @@ from models.reference import (
 )
 
 
-def import_from_mdb(progress=None) -> dict:
-    """Import all tables. Returns {table_name: row_count}."""
-    conn = pyodbc.connect(MDB_CONN_STR, autocommit=True)
+def import_from_mdb(progress=None, mdb_path=None) -> dict:
+    """Import all tables from the given MDB path (or config default). Returns {table_name: row_count}."""
+    if mdb_path is not None:
+        conn_str = (
+            r"DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};"
+            f"DBQ={mdb_path};"
+        )
+    else:
+        conn_str = MDB_CONN_STR
+    conn = pyodbc.connect(conn_str, autocommit=True)
     out = {}
     try:
         with Exhibitor._meta.database.atomic():
