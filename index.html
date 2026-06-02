@@ -6,12 +6,12 @@
   <meta name="description" content="Benchabird Show Manager — free, offline-first Windows desktop app for cage-bird show organisers.">
   <title>Benchabird Show Manager</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.511.0/dist/umd/lucide.min.js" defer></script>
 </head>
 <body>
 
 <!-- NAV -->
-<nav>
+<nav aria-label="Main navigation">
   <a class="nav-logo" href="#">
     <div class="nav-logo-icon">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -32,6 +32,7 @@
   </div>
 </nav>
 
+<main>
 <!-- HERO -->
 <section class="hero" id="download">
   <div class="hero-badge">
@@ -42,7 +43,7 @@
   <p>Benchabird replaces your legacy Access database with a fast, offline-first desktop app built for cage-bird show organisers.</p>
   <div class="hero-ctas">
     <a href="https://github.com/RyanSchoultz/benchabird_app/releases/latest/download/benchabird.exe"
-       class="btn-primary">
+       class="btn-primary" target="_blank" rel="noopener">
       <i data-lucide="download" width="17" height="17"></i>
       Download for Windows
     </a>
@@ -72,6 +73,8 @@
         src="git_assets/image01.png"
         alt="Benchabird Show Manager — dashboard view showing show statistics and entry table"
         class="screenshot-img"
+        width="1906"
+        height="804"
       >
     </div>
   </div>
@@ -225,6 +228,8 @@
       Ko-fi
     </a>
   </div>
+</main>
+
 </footer>
 
 <script>
