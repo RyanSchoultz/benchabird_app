@@ -40,7 +40,7 @@ A standalone Windows desktop application for managing cage-bird shows. Replaces 
 | **Special Winners** | Assign special prize winners by exhibit number |
 | **Special Prizes** | Manage the prize list: description, trophy type, cash amounts |
 | **Tickets** | Preview and print cage tickets as PDF. Each ticket has exhibit #, class, exhibitor name, QR code, and club logo watermark |
-| **Reports** | 7 PDF reports with in-app preview, page navigation, Print button, and Save As |
+| **Reports** | PDF reports and exhibitor bundles with in-app preview, page navigation, Print button, and Save As |
 | **Hall of Fame** | Historical champion records (read-only) |
 | **Notes** | Brochure text per bird type |
 | **Archives** | Named database snapshots — save before a reset, restore any previous show state |
@@ -237,6 +237,11 @@ Click any report button to generate and preview it:
 | Prize Money | Cash prizes only, with per-exhibitor totals |
 | Address Tags | 3-column mailing labels (label-flagged exhibitors only) |
 | Exhibitor List | All exhibitors with entry and late-entry counts |
+| Entry Confirmation | Exhibitor entry confirmation sheets |
+| Exhibitor Bundle | One exhibitor's summary, entries, tickets, late entries, results, and address label |
+| Results by Exhibitor | Results grouped by exhibitor |
+
+**Exhibitor Bundle:** click `Exhibitor Bundle` in Reports, search for an exhibitor, choose bundle sections, then preview/print one PDF containing that exhibitor's summary, entries, tickets when calculated, late entries, results when recorded, and address label when flagged.
 
 **In the preview window:**
 - `← Prev` / `Next →` — navigate pages
@@ -337,6 +342,9 @@ Re-imports from the legacy Access MDB file. Overwrites exhibitors, classes, Hall
 | Prize Money | `benchabird_prize_money.pdf` | Cash prizes, per-exhibitor totals |
 | Address Tags | `benchabird_address_tags.pdf` | 3-column mailing labels |
 | Exhibitor List | `benchabird_exhibitor_list.pdf` | Exhibitors with entry counts |
+| Entry Confirmation | `benchabird_entry_confirmation.pdf` | Exhibitor entry confirmation sheets |
+| Exhibitor Bundle | `benchabird_exhibitor_<exh_no>_bundle.pdf` | One selected exhibitor's paperwork |
+| Results by Exhibitor | `benchabird_results_by_exhibitor.pdf` | Results grouped by exhibitor |
 
 ---
 

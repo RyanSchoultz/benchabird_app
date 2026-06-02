@@ -283,10 +283,23 @@ SECTIONS = {
             "  Special Winners   — all special prizes and their assigned winners\n"
             "  Prize Money       — cash prizes with per-exhibitor subtotals\n"
             "  Address Tags      — 3-column mailing labels (label-flagged exhibitors only)\n"
-            "  Exhibitor List    — all exhibitors with entry and late-entry counts\n\n"
+            "  Exhibitor List    — all exhibitors with entry and late-entry counts\n"
+            "  Entry Confirmation — exhibitor entry confirmation sheets\n"
+            "  Exhibitor Bundle  — one selected exhibitor's paperwork\n"
+            "  Results by Exhibitor — results grouped by exhibitor\n\n"
             "All reports include the show name, date, club, and the club logo watermark "
             "(if configured). Generation runs in the background — the preview opens "
             "automatically when complete."
+        )),
+        ("Exhibitor Bundle", (
+            "Use Exhibitor Bundle when you need one exhibitor's paperwork in a single PDF.\n\n"
+            "1. Go to Reports\n"
+            "2. Click Exhibitor Bundle\n"
+            "3. Search by exhibitor number, name, email, or club\n"
+            "4. Select the exhibitor and choose the bundle sections\n"
+            "5. Preview, print, or save the generated PDF\n\n"
+            "Bundles can include exhibitor details, entries, cage tickets after Calculate, late entries, "
+            "results when recorded, and an address label when the exhibitor is flagged for labels."
         )),
         ("PDF Preview Window", (
             "The preview window opens after any report or ticket PDF is generated.\n\n"
