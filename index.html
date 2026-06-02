@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Benchabird Show Manager: free, offline-first Windows desktop app for cage-bird show organisers with QR-powered results entry.">
+  <meta name="description" content="Benchabird Show Manager: free, offline-first Windows desktop app for cage-bird show organisers. QR-powered results entry, 10 PDF reports, no account needed.">
   <title>Benchabird Show Manager</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.511.0/dist/umd/lucide.min.js" defer></script>
@@ -23,8 +23,8 @@
     Benchabird
   </a>
   <div class="nav-links">
-    <a href="#features">Features</a>
-    <a href="#download">Download</a>
+    <a href="#features" class="nav-text-link">Features</a>
+    <a href="#download" class="nav-text-link">Download</a>
     <a href="https://github.com/RyanSchoultz/benchabird_app" class="nav-gh" target="_blank" rel="noopener">
       <svg width="15" height="15" viewBox="0 0 24 24" class="gh-svg" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
       GitHub
@@ -41,7 +41,7 @@
     Free &amp; Open Source &nbsp;&middot;&nbsp; Windows Desktop
   </div>
   <h1>Show management<br><span>done right.</span></h1>
-  <p>Benchabird replaces your legacy Access database with a fast, offline-first desktop app built for cage-bird show organisers, now with QR-powered results entry.</p>
+  <p>Benchabird replaces your legacy Access database with a fast, offline-first desktop app built for cage-bird show organisers &mdash; no account, no internet, no installation required.</p>
   <div class="hero-ctas">
     <a href="https://github.com/RyanSchoultz/benchabird_app/releases/latest/download/benchabird.exe"
        class="btn-primary" target="_blank" rel="noopener">
@@ -55,13 +55,12 @@
     </a>
   </div>
   <div class="hero-note">
-    <span><i data-lucide="tag" width="12" height="12"></i> v1.0.0</span>
     <span><i data-lucide="monitor" width="12" height="12"></i> Windows 10 / 11 &middot; 64-bit</span>
     <span><i data-lucide="package" width="12" height="12"></i> No installation needed</span>
+    <span><i data-lucide="wifi-off" width="12" height="12"></i> Works offline</span>
     <span><i data-lucide="qr-code" width="12" height="12"></i> QR results scanning</span>
   </div>
 </section>
-
 </div><!-- /.hero-bg -->
 
 <!-- SCREENSHOT BAND -->
@@ -75,7 +74,7 @@
       </div>
       <img
         src="git_assets/image01.png"
-        alt="Benchabird Show Manager — dashboard view showing show statistics and entry table"
+        alt="Benchabird Show Manager &mdash; dashboard view showing show statistics and entry table"
         class="screenshot-img"
         width="1906"
         height="804"
@@ -88,37 +87,37 @@
 <section class="section" id="features">
   <div class="section-label">What's inside</div>
   <h2 class="section-title">Everything a show needs</h2>
-  <p class="section-sub">From first entry to final report — no spreadsheets, no Access, no internet required.</p>
+  <p class="section-sub">From first entry to final report &mdash; no spreadsheets, no Access, no internet required.</p>
   <div class="features-grid">
     <div class="feature-card">
       <div class="feature-icon"><i data-lucide="ticket" width="20" height="20"></i></div>
       <h4>Cage Tickets</h4>
-      <p>Print PDF tickets with exhibit number, class, exhibitor name, and QR payloads that resolve directly to results entry.</p>
+      <p>Print PDF cage tickets with exhibit number, class, exhibitor name, and a QR code that feeds directly into results entry.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon"><i data-lucide="scan-line" width="20" height="20"></i></div>
       <h4>QR Results Scanning</h4>
-      <p>Enter results by typing, USB scanner, desktop webcam, or a phone companion on the local network.</p>
+      <p>Enter results by typing, USB barcode scanner, desktop webcam, or a phone companion on the local network &mdash; your choice.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon"><i data-lucide="file-text" width="20" height="20"></i></div>
-      <h4>7 PDF Reports</h4>
-      <p>Results sheet, show catalogue, prize money, address tags, exhibitor list — preview in-app before printing.</p>
+      <h4>10 PDF Reports</h4>
+      <p>Results sheet, show catalogue, prize money, address tags, entry confirmations, results by exhibitor &mdash; all with in-app preview.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i data-lucide="users" width="20" height="20"></i></div>
+      <h4>Exhibitor Management</h4>
+      <p>Full CRUD with CSV/Excel import, per-class entry limits, judge assignment, and address label flagging.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i data-lucide="archive" width="20" height="20"></i></div>
+      <h4>Archives</h4>
+      <p>Save named snapshots of the entire database. Restore any previous show &mdash; perfect before a season reset.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon"><i data-lucide="trophy" width="20" height="20"></i></div>
       <h4>Special Winners</h4>
       <p>Assign special prizes by exhibit number. Manage the full prize list with trophy types and cash amounts.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon"><i data-lucide="archive" width="20" height="20"></i></div>
-      <h4>Archives</h4>
-      <p>Save named snapshots of the entire database. Restore any previous show — perfect before a season reset.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon"><i data-lucide="search" width="20" height="20"></i></div>
-      <h4>Global Search</h4>
-      <p>Search exhibitors, entries, results, and special winners at once. Jump directly to any record in one click.</p>
     </div>
   </div>
 </section>
@@ -130,23 +129,23 @@
     <h2 class="section-title">See it for yourself</h2>
     <p class="section-sub">A closer look at the key views.</p>
     <div class="gallery-grid">
-      <figure class="gallery-figure" onclick="openLightbox('git_assets/image02.png', 'Reports — all seven PDF reports')">
+      <figure class="gallery-figure" onclick="openLightbox('git_assets/image02.png', 'PDF Reports')">
         <img
           src="git_assets/image02.png"
-          alt="Benchabird Reports view — seven one-click PDF report buttons including Results Sheet, Show Catalogue, and Prize Money"
+          alt="Benchabird Reports view &mdash; ten one-click PDF report buttons including Results Sheet, Show Catalogue, and Prize Money"
           class="gallery-img"
           width="991"
           height="775"
         >
         <figcaption>
           PDF Reports
-          <div class="caption-sub">Seven ready-to-print reports, one click each</div>
+          <div class="caption-sub">Ten ready-to-print reports, one click each</div>
         </figcaption>
       </figure>
-      <figure class="gallery-figure" onclick="openLightbox('git_assets/image03.png', 'SQL Editor — direct database access')">
+      <figure class="gallery-figure" onclick="openLightbox('git_assets/image03.png', 'SQL Editor')">
         <img
           src="git_assets/image03.png"
-          alt="Benchabird SQL Editor — direct database access with query editor and scrollable results table"
+          alt="Benchabird SQL Editor &mdash; direct database access with query editor and scrollable results table"
           class="gallery-img"
           width="990"
           height="837"
@@ -159,7 +158,7 @@
       <figure class="gallery-figure" onclick="openLightbox('git_assets/image04.png', 'Help &amp; How-To Guide')">
         <img
           src="git_assets/image04.png"
-          alt="Benchabird Help and How-To Guide — tabbed reference covering setup, exhibitors, entries, results, and more"
+          alt="Benchabird Help and How-To Guide &mdash; tabbed reference covering setup, exhibitors, entries, results, and more"
           class="gallery-img"
           width="1903"
           height="977"
@@ -177,22 +176,22 @@
 <section class="section">
   <div class="section-label">Workflow</div>
   <h2 class="section-title">From setup to prize ceremony</h2>
-  <p class="section-sub">A typical show runs in a few clear steps — Benchabird guides you through each one.</p>
+  <p class="section-sub">A typical show runs in a few clear steps &mdash; Benchabird guides you through each one.</p>
   <div class="workflow-steps">
     <div class="step">
       <div class="step-number">1</div>
       <h4>Setup &amp; Exhibitors</h4>
-      <p>Enter show details, upload your club logo, and add all registered exhibitors.</p>
+      <p>Enter show details, upload your club logo, and add all registered exhibitors. Import from CSV or Excel.</p>
     </div>
     <div class="step">
       <div class="step-number">2</div>
       <h4>Entries &amp; Tickets</h4>
-      <p>Add class entries, run Calculate to assign ticket numbers, then print cage tickets as PDF.</p>
+      <p>Add class entries, run Calculate to assign ticket numbers, then print cage tickets as PDF with QR codes.</p>
     </div>
     <div class="step">
       <div class="step-number">3</div>
       <h4>Results &amp; Reports</h4>
-      <p>Scan ticket QRs into Results, choose placings on the desktop, assign special winners, then print all seven PDF reports.</p>
+      <p>Scan ticket QRs or type exhibit numbers, choose placings, assign special winners, then generate all PDF reports.</p>
     </div>
   </div>
 </section>
@@ -203,7 +202,7 @@
     <svg width="24" height="24" viewBox="0 0 24 24" class="gh-svg" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
   </div>
   <h3>Free and open source</h3>
-  <p>MIT licensed. Built for the cage-bird community. Fork it, contribute, or just use it — no strings attached.</p>
+  <p>MIT licensed. Your show data stays local, under your control &mdash; no account, no cloud, no telemetry.</p>
   <div class="oss-badges">
     <span class="badge"><i data-lucide="scale" width="12" height="12"></i> MIT License</span>
     <span class="badge"><i data-lucide="database" width="12" height="12"></i> Python &middot; SQLite</span>
@@ -224,8 +223,8 @@
     <div class="kofi-icon-wrap">
       <i data-lucide="coffee" width="24" height="24"></i>
     </div>
-    <h3>Enjoying Benchabird?</h3>
-    <p>It's free to use and always will be. If it saves you time at your next show, consider buying the developer a coffee.</p>
+    <h3>Support Benchabird</h3>
+    <p>Benchabird is built as a free, open-source tool for bird clubs and show organisers. If it saves your club time, reduces paperwork, or helps make show day easier &mdash; please consider supporting the project.</p>
     <a href="https://ko-fi.com/schoultzie" class="btn-kofi" target="_blank" rel="noopener">
       <i data-lucide="heart" width="16" height="16"></i>
       Support on Ko-fi
