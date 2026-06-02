@@ -120,6 +120,8 @@ Typical order of operations for running a show:
 
 **Search:** type in the search box in the toolbar — the table filters live as you type.
 
+**Import:** click `Import` to load exhibitors from a CSV or Excel file (`.csv`, `.xlsx`, `.xls`). The importer accepts common headings such as `ExhNo`, `Exhibitor #`, `Name`, `Full Name`, `Address`, `Town`, `ZipCode`, `TelHome`, `Cell`, `Email`, `Club`, and `PrintAddress`. Existing exhibitors are matched by exhibitor number first, then exact name; matches are updated and new exhibitors are created. Rows without a name are skipped and reported.
+
 **Export:** click `Export` to save the current (filtered) exhibitor list to CSV or Excel.
 
 ---
