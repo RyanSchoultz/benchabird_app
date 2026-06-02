@@ -176,6 +176,12 @@ Typical order of operations for running a show:
 - Pasted/scanned legacy QR text with `ExhNo:<n> Class:<code>` is still accepted when it uniquely matches a calculated entry
 - If OpenCV, a webcam, the phone camera, or local networking is unavailable, manual entry and USB scanner entry still work.
 
+**Judge Mode:**
+- Click `Judge Mode` for a streamlined steward/operator entry screen
+- Scan or type an exhibit, confirm the class/exhibitor context, then choose the placing
+- Judge Mode keeps recent saves visible and avoids destructive actions like Clear All Results
+- Results are still saved on the desktop; scanners only speed up exhibit selection
+
 **Not Benched:**
 - Type the exhibit number, click `Not Benched`
 - NB entries appear in the `NB` column highlighted in red

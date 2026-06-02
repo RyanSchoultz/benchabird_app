@@ -197,6 +197,16 @@ SECTIONS = {
             "This flow lets you enter results without touching the mouse. "
             "If an exhibit already has a result, it is updated with the new value."
         )),
+        ("Judge Mode", (
+            "Judge Mode is for a steward or operator entering results while a judge works through birds.\n\n"
+            "1. Open Results and click Judge Mode\n"
+            "2. Optionally enter a class filter\n"
+            "3. Scan a ticket QR or type an exhibit number\n"
+            "4. Check the resolved exhibit context\n"
+            "5. Click the placing or Not Benched\n\n"
+            "Judge Mode keeps recent saves visible and returns focus to the scan field after each action. "
+            "Normal Results remains available for review, filtering, export, and Clear All Results."
+        )),
         ("Not Benched", (
             "If a bird was not brought to the show:\n"
             "1. Type the exhibit number in the Exhibit # field\n"
