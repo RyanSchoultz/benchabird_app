@@ -169,6 +169,16 @@ class ResultsView(ctk.CTkFrame):
         if exhibit_no is None:
             return False
         self._set_resolved_exhibit(exhibit_no)
+        # Bring the main window to the front so the operator can see
+        # the exhibit # field and choose a result. The scanner dialog
+        # sits on top of the app, so without this the result combo is hidden.
+        try:
+            top = self.winfo_toplevel()
+            top.lift()
+            top.focus_force()
+        except Exception:
+            pass
+        self._result_combo.focus()
         return True
 
     def _open_judge_mode(self):
