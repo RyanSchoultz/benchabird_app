@@ -15,6 +15,25 @@ _LATE_COLOR = HexColor('#b45309')  # amber
 _COL_TICKET = MARGIN
 _COL_CLASS  = MARGIN + 22 * mm
 _COL_DESC   = MARGIN + 44 * mm
+_SECTION_OVERHEAD_ROWS = 4  # header + contact + col-headers + count-footer
+
+
+def _draw_col_headers(c, y: float, cont_label: str = "") -> float:
+    """Draw column header rule and labels. Optionally draw a continuation label first."""
+    if cont_label:
+        c.setFont("Helvetica-Bold", 9)
+        c.setFillColorRGB(0.4, 0.4, 0.4)
+        c.drawString(MARGIN, y, cont_label + " (cont.)")
+        c.setFillColorRGB(0, 0, 0)
+        y -= ROW_H
+    c.setLineWidth(0.3)
+    c.line(MARGIN, y, PAGE_W - MARGIN, y)
+    y -= ROW_H * 0.6
+    c.setFont("Helvetica-Bold", 8)
+    c.drawString(_COL_TICKET, y, "Ticket #")
+    c.drawString(_COL_CLASS, y, "Class")
+    c.drawString(_COL_DESC, y, "Description")
+    return y - ROW_H
 
 
 def generate_entry_confirmation(sd=None, include_late: bool = True) -> bytes:
@@ -61,10 +80,8 @@ def generate_entry_confirmation(sd=None, include_late: bool = True) -> bytes:
         if not regular and not late:
             continue
 
-        total_regular += len(regular)
-        total_late += len(late)
         exh_count += 1
-        rows_needed = 4 + len(regular) + len(late)
+        rows_needed = _SECTION_OVERHEAD_ROWS + len(regular) + len(late)
         if not first_section:
             if y - rows_needed * ROW_H < MARGIN:
                 draw_footer(c, page_num)
@@ -80,8 +97,9 @@ def generate_entry_confirmation(sd=None, include_late: bool = True) -> bytes:
         first_section = False
 
         # Exhibitor header
+        exh_label = f"Exhibitor #{exh.exh_no}  —  {exh.name or ''}"
         c.setFont("Helvetica-Bold", 10)
-        header = f"Exhibitor #{exh.exh_no}  —  {exh.name or ''}"
+        header = exh_label
         if exh.club:
             header += f"  [{exh.club}]"
         c.drawString(MARGIN, y, header)
@@ -97,14 +115,7 @@ def generate_entry_confirmation(sd=None, include_late: bool = True) -> bytes:
             y -= ROW_H * 0.8
 
         # Column headers
-        c.setLineWidth(0.3)
-        c.line(MARGIN, y, PAGE_W - MARGIN, y)
-        y -= ROW_H * 0.6
-        c.setFont("Helvetica-Bold", 8)
-        c.drawString(_COL_TICKET, y, "Ticket #")
-        c.drawString(_COL_CLASS, y, "Class")
-        c.drawString(_COL_DESC, y, "Description")
-        y -= ROW_H
+        y = _draw_col_headers(c, y)
 
         # Regular entry rows
         for entry in regular:
@@ -113,6 +124,7 @@ def generate_entry_confirmation(sd=None, include_late: bool = True) -> bytes:
                 c.showPage()
                 page_num += 1
                 y = draw_page_header(c, "Entry Confirmation", sd)
+                y = _draw_col_headers(c, y, exh_label)
 
             c.setFont("Helvetica", 9)
             ticket = str(entry.auto_num) if use_calculated else "—"
@@ -122,6 +134,7 @@ def generate_entry_confirmation(sd=None, include_late: bool = True) -> bytes:
             c.drawString(_COL_CLASS, y, code)
             c.drawString(_COL_DESC, y, desc)
             y -= ROW_H
+            total_regular += 1
 
         # Late entry rows
         for entry in late:
@@ -130,6 +143,7 @@ def generate_entry_confirmation(sd=None, include_late: bool = True) -> bytes:
                 c.showPage()
                 page_num += 1
                 y = draw_page_header(c, "Entry Confirmation", sd)
+                y = _draw_col_headers(c, y, exh_label)
 
             c.setFont("Helvetica", 9)
             code = entry.class_code or ""
@@ -141,6 +155,7 @@ def generate_entry_confirmation(sd=None, include_late: bool = True) -> bytes:
             c.drawRightString(PAGE_W - MARGIN, y, "LATE")
             c.setFillColorRGB(0, 0, 0)
             y -= ROW_H
+            total_late += 1
 
         # Entry count footer
         y -= 2
@@ -157,23 +172,17 @@ def generate_entry_confirmation(sd=None, include_late: bool = True) -> bytes:
         y -= ROW_H * 0.5
 
     # Document summary
-    if exh_count:
+    if exh_count > 0:
         y -= ROW_H
-        c.setLineWidth(0.5)
-        c.line(MARGIN, y, PAGE_W - MARGIN, y)
-        y -= ROW_H * 0.7
-        c.setFont("Helvetica-Bold", 8)
-        c.setFillColorRGB(0.3, 0.3, 0.3)
-        summary_parts = [
-            f"{exh_count} exhibitor{'s' if exh_count != 1 else ''}",
-            f"{total_regular} {'entry' if total_regular == 1 else 'entries'}",
-        ]
+        c.setFont("Helvetica", 8)
+        c.setFillColorRGB(0.4, 0.4, 0.4)
+        summary_parts = [f"{exh_count} {'exhibitor' if exh_count == 1 else 'exhibitors'}",
+                         f"{total_regular} {'entry' if total_regular == 1 else 'entries'}"]
         if total_late:
-            summary_parts.append(
-                f"{total_late} late {'entry' if total_late == 1 else 'entries'}"
-            )
+            summary_parts.append(f"{total_late} late")
         c.drawRightString(PAGE_W - MARGIN, y, "  •  ".join(summary_parts))
         c.setFillColorRGB(0, 0, 0)
+        y -= ROW_H * 0.7
 
     draw_footer(c, page_num)
     c.save()
