@@ -1,6 +1,9 @@
 # views/help_view.py
 """In-app how-to guide — tabbed reference for all major workflows."""
+import webbrowser
 import customtkinter as ctk
+
+_KOFI_URL = "https://ko-fi.com/schoultzie"
 
 
 SECTIONS = {
@@ -479,7 +482,29 @@ class HelpView(ctk.CTkFrame):
         ).grid(row=0, column=0, sticky="w", padx=16, pady=(16, 4))
 
         tabs = ctk.CTkTabview(self)
-        tabs.grid(row=1, column=0, sticky="nsew", padx=16, pady=(0, 16))
+        tabs.grid(row=1, column=0, sticky="nsew", padx=16, pady=(0, 8))
+
+        # Ko-fi support strip
+        support = ctk.CTkFrame(self, fg_color="transparent")
+        support.grid(row=2, column=0, sticky="ew", padx=16, pady=(0, 12))
+        support.grid_columnconfigure(1, weight=1)
+        ctk.CTkLabel(
+            support,
+            text="Benchabird is free and open-source. If it helps your club, consider supporting development:",
+            font=ctk.CTkFont(size=11),
+            text_color=("gray40", "gray60"),
+            anchor="w",
+        ).grid(row=0, column=0, sticky="w", padx=(0, 12))
+        ctk.CTkButton(
+            support,
+            text="Support on Ko-fi",
+            width=140,
+            height=28,
+            fg_color="#ff5e5b",
+            hover_color="#e84d4a",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            command=lambda: webbrowser.open(_KOFI_URL),
+        ).grid(row=0, column=1, sticky="e")
 
         for section_name, topics in SECTIONS.items():
             tab = tabs.add(section_name)

@@ -1,6 +1,10 @@
-# Benchabird Show Manager
+# Benchabird
 
-A standalone Windows desktop application for managing cage-bird shows. Replaces a legacy Microsoft Access system with a modern, offline-first Python app — no network connection, no server, no installation required.
+Benchabird is an open-source, offline-first bird show management system designed to help clubs manage exhibitors, entries, cage ticket numbers, judging results, special winners, reports, and show archives.
+
+It was originally created as a modern replacement for an older Microsoft Access-based workflow, with the goal of making show administration simpler, safer, and easier to reuse across future shows.
+
+Benchabird runs locally on Windows, does not require an internet connection, and stores all show data in a local SQLite database.
 
 <p align="center">
   <img src="git_assets/image01.png" alt="Benchabird Show Manager — Welcome Screen" width="100%">
@@ -10,16 +14,29 @@ A standalone Windows desktop application for managing cage-bird shows. Replaces 
 
 ## Table of Contents
 
+- [Why Benchabird Exists](#why-benchabird-exists)
 - [Features](#features)
 - [Quick Start](#quick-start)
+- [Privacy and Data](#privacy-and-data)
 - [Show Workflow](#show-workflow)
 - [User Guide](#user-guide)
 - [Reports Reference](#reports-reference)
 - [Keyboard Shortcuts](#keyboard-shortcuts)
+- [Requirements](#requirements)
+- [Support the Project](#support-the-project)
+- [Setup, Migration, and Customisation Help](#setup-migration-and-customisation-help)
 - [Development Setup](#development-setup)
-- [Project Layout](#project-layout)
 - [Building the Executable](#building-the-executable)
+- [Project Layout](#project-layout)
 - [Tech Stack](#tech-stack)
+
+---
+
+## Why Benchabird Exists
+
+Many bird clubs still rely on spreadsheets, manual paperwork, or older Access databases to manage show entries and results. These systems can work, but they are often difficult to maintain, easy to break, and dependent on one person knowing how everything fits together.
+
+Benchabird aims to provide a cleaner, more approachable tool for managing the full show workflow, while keeping all data local and under the club's control.
 
 ---
 
@@ -32,8 +49,8 @@ A standalone Windows desktop application for managing cage-bird shows. Replaces 
 | **Dashboard** | Live snapshot of show progress: entry count, result coverage, workflow status checklist, top exhibitors bar chart, quick-navigation buttons |
 | **Show Setup** | Show name, date, club details in English and Afrikaans. Upload club logo — stored in the database and applied as a watermark on all PDFs |
 | **Search** | Global search across exhibitors, entries, results, and special winners. Per-view filter bars on every table |
-| **Exhibitors** | Full CRUD with live search. Toggle address-label inclusion per exhibitor. Export filtered list to CSV or Excel |
-| **Entries** | Raw and calculated entry views. Add individually, bulk-add by exhibitor, bulk rename classes, bulk delete or reassign. Export to CSV or Excel |
+| **Exhibitors** | Full CRUD with live search. Toggle address-label inclusion per exhibitor. Import from CSV/Excel. Export filtered list to CSV or Excel |
+| **Entries** | Raw and calculated entry views. Add individually, bulk-add by exhibitor, bulk rename classes, bulk delete or reassign. Per-class entry limits. Export to CSV or Excel |
 | **Late Entries** | Separate tracking for post-deadline entries |
 | **Calculate** | Assigns sequential ticket numbers to all entries. Run after adding entries, before printing tickets |
 | **Results** | Rapid-entry mode: enter or scan exhibit number/QR payload → result dropdown → save. Supports manual entry, USB scanners, desktop webcam QR scanning, and local mobile companion scanning. Mark Not Benched. Export to CSV or Excel |
@@ -48,7 +65,7 @@ A standalone Windows desktop application for managing cage-bird shows. Replaces 
 
 ### PDF Features
 
-- **Club logo watermark** on every report page and ticket page (faded, centered — no text overlap)
+- **Club logo watermark** on every report page and ticket page (faded, centred — no text overlap)
 - **In-app PDF preview** with page navigation before committing to print
 - **Print button** — sends to OS print dialog directly from the preview window
 - **Save As** — saves the PDF to any location; opens automatically on Windows
@@ -59,7 +76,7 @@ A standalone Windows desktop application for managing cage-bird shows. Replaces 
 
 ### Option A — Prebuilt Executable (Recommended)
 
-1. Download `benchabird.exe` from the `dist/` folder or release page
+1. Download `benchabird.exe` from the [latest release](https://github.com/RyanSchoultz/benchabird_app/releases/latest)
 2. Double-click to run — no Python or installation required
 3. On first run the app creates `benchabird.db` in the same folder as the exe
 
@@ -75,12 +92,27 @@ python main.py
 
 ---
 
+## Privacy and Data
+
+Benchabird is designed to run locally on your computer.
+
+- No account is required
+- No internet connection is required for normal use
+- No telemetry or tracking is included
+- Show data is stored in a local SQLite database file (`benchabird.db`)
+- The packaged exe ships with a clean starter database containing only demo exhibitors
+- No real club, exhibitor, or show data is included in the starter database
+
+You remain responsible for backing up your own show database files. The Archives feature can help — save a named snapshot before any major change.
+
+---
+
 ## Show Workflow
 
 Typical order of operations for running a show:
 
 1. **Show Setup** — enter show name, date, club details, upload club logo
-2. **Exhibitors** — add all registered exhibitors (or import from legacy MDB)
+2. **Exhibitors** — add all registered exhibitors (or import from CSV/Excel)
 3. **Entries** — add each exhibitor's class entries
 4. **Calculate** (Entries view) — assigns sequential ticket numbers
 5. **Tickets** — print cage tickets; exhibitors attach them to their cages
@@ -101,7 +133,7 @@ Typical order of operations for running a show:
 4. For the club logo: click **Browse…**, select a PNG or JPG file
    - The image is stored as bytes inside the database (no external file dependency)
    - A live preview renders immediately in the preview box below the buttons
-   - The logo appears as a faded watermark centered on every PDF page
+   - The logo appears as a faded watermark centred on every PDF page
 5. Click **Clear** to remove the logo
 
 ---
@@ -120,7 +152,7 @@ Typical order of operations for running a show:
 
 **Search:** type in the search box in the toolbar — the table filters live as you type.
 
-**Import:** click `Import` to load exhibitors from a CSV or Excel file (`.csv`, `.xlsx`, `.xls`). The importer accepts common headings such as `ExhNo`, `Exhibitor #`, `Name`, `Full Name`, `Address`, `Town`, `ZipCode`, `TelHome`, `Cell`, `Email`, `Club`, and `PrintAddress`. Existing exhibitors are matched by exhibitor number first, then exact name; matches are updated and new exhibitors are created. Rows without a name are skipped and reported.
+**Import:** click `Import` to load exhibitors from a CSV or Excel file (`.csv`, `.xlsx`, `.xls`). The importer accepts common headings such as `ExhNo`, `Name`, `Address`, `Town`, `Cell`, `Email`, and `Club`. Existing exhibitors are matched by exhibitor number first, then exact name; matches are updated and new exhibitors are created. Rows without a name are skipped and reported.
 
 **Export:** click `Export` to save the current (filtered) exhibitor list to CSV or Excel.
 
@@ -135,9 +167,9 @@ Typical order of operations for running a show:
 4. If that exhibitor already has an entry for the same class, an orange duplicate warning appears
 5. Click Save (or press Enter on the class combo)
 
-**Per-class limits:** set `class_def.entry_limit` to a positive number to cap a class. Blank or `0` means unlimited. Normal entries and late entries count toward the same limit, and the add dialogs block entries once the class is full.
+**Per-class limits:** set a class's entry limit to cap how many birds may enter. Blank or 0 means unlimited. The add dialogs block entries once the class is full.
 
-**Judge assignment:** set `class_def.judge` to assign a judge to a class. Blank means unassigned. Assigned judges appear on the Show Catalogue class headers and in the Results Sheet judge column.
+**Judge assignment:** assign a judge name to a class. Assigned judges appear on the Show Catalogue class headers and in the Results Sheet.
 
 **Bulk editing (click `Bulk Edit…`):**
 
@@ -171,16 +203,11 @@ Typical order of operations for running a show:
 - **Desktop webcam:** click `Scan QR`, hold the cage-ticket QR code in front of the desktop webcam, then choose the result once the scan is accepted.
 - **Mobile companion:** click `Mobile Scan` to start a temporary local receiver. Scan the pairing QR with a phone on the same Wi-Fi/network, then use the phone page to scan ticket QRs. Accepted scans fill `Exhibit #` on the desktop and move focus to Result.
 - The mobile companion does not save results from the phone. The desktop operator still chooses the placing and presses Enter to save.
-- Mobile live camera scanning depends on phone/browser security rules. If the browser blocks camera access over the local network, use the companion page's text field with a phone QR scanner app or pasted payload.
-- If the phone cannot connect, check that both devices are on the same network and that Windows Firewall allows the Benchabird app to accept local/private network connections.
-- Pasted/scanned legacy QR text with `ExhNo:<n> Class:<code>` is still accepted when it uniquely matches a calculated entry
-- If OpenCV, a webcam, the phone camera, or local networking is unavailable, manual entry and USB scanner entry still work.
 
 **Judge Mode:**
 - Click `Judge Mode` for a streamlined steward/operator entry screen
 - Scan or type an exhibit, confirm the class/exhibitor context, then choose the placing
 - Judge Mode keeps recent saves visible and avoids destructive actions like Clear All Results
-- Results are still saved on the desktop; scanners only speed up exhibit selection
 
 **Not Benched:**
 - Type the exhibit number, click `Not Benched`
@@ -237,11 +264,9 @@ Click any report button to generate and preview it:
 | Prize Money | Cash prizes only, with per-exhibitor totals |
 | Address Tags | 3-column mailing labels (label-flagged exhibitors only) |
 | Exhibitor List | All exhibitors with entry and late-entry counts |
-| Entry Confirmation | Exhibitor entry confirmation sheets |
+| Entry Confirmation | Per-exhibitor confirmation sheets with ticket numbers |
 | Exhibitor Bundle | One exhibitor's summary, entries, tickets, late entries, results, and address label |
-| Results by Exhibitor | Results grouped by exhibitor |
-
-**Exhibitor Bundle:** click `Exhibitor Bundle` in Reports, search by exhibitor name, exhibitor number, or exhibit number, choose bundle sections, then preview/print one PDF containing that exhibitor's summary, entries, tickets when calculated, late entries, results when recorded, and address label when flagged.
+| Results by Exhibitor | All results grouped by exhibitor, with special prizes and prize money |
 
 **In the preview window:**
 - `← Prev` / `Next →` — navigate pages
@@ -342,7 +367,7 @@ Re-imports from the legacy Access MDB file. Overwrites exhibitors, classes, Hall
 | Prize Money | `benchabird_prize_money.pdf` | Cash prizes, per-exhibitor totals |
 | Address Tags | `benchabird_address_tags.pdf` | 3-column mailing labels |
 | Exhibitor List | `benchabird_exhibitor_list.pdf` | Exhibitors with entry counts |
-| Entry Confirmation | `benchabird_entry_confirmation.pdf` | Exhibitor entry confirmation sheets |
+| Entry Confirmation | `benchabird_entry_confirmation.pdf` | Per-exhibitor confirmation sheets |
 | Exhibitor Bundle | `benchabird_exhibitor_<exh_no>_bundle.pdf` | One selected exhibitor's paperwork |
 | Results by Exhibitor | `benchabird_results_by_exhibitor.pdf` | Results grouped by exhibitor |
 
@@ -358,9 +383,7 @@ Re-imports from the legacy Access MDB file. Overwrites exhibitors, classes, Hall
 | `Ctrl+T` | Navigate to Tickets |
 | `Ctrl+X` | Navigate to Exhibitors |
 | `Ctrl+H` | Navigate to Help |
-| `Enter` | Results view: accept exhibit # / scan → result → save |
-| `Mobile Scan` button | Results view: start temporary phone companion receiver |
-| `Scan QR` button | Results view: start desktop webcam QR scanner |
+| `Enter` | Results view: advance exhibit # → result → save |
 | `Ctrl+Enter` | SQL Editor: run query |
 | `Escape` | Close most dialogs |
 
@@ -370,6 +393,38 @@ Re-imports from the legacy Access MDB file. Overwrites exhibitors, classes, Hall
 
 - **Windows 10 or 11** (64-bit)
 - No Python installation needed when using the prebuilt exe
+
+---
+
+## Support the Project
+
+Benchabird is built as a free, open-source tool for bird clubs and show organisers.
+
+If it saves your club time, reduces paperwork, or helps make show day easier, please consider supporting the project on Ko-fi.
+
+Your support helps fund ongoing development, bug fixes, Windows releases, documentation, and future improvements.
+
+[**Support Benchabird on Ko-fi →**](https://ko-fi.com/schoultzie)
+
+---
+
+## Setup, Migration, and Customisation Help
+
+Benchabird is free and open-source, but some clubs may need help getting started.
+
+Paid assistance may be available for:
+
+- Setting up Benchabird for your club
+- Migrating data from an existing Access database or spreadsheet
+- Creating custom reports or ticket layouts
+- Preparing a clean show database before a season
+- Training users before a show
+- Show-day support
+
+For enquiries, contact:
+
+**Ryan Schoultz**
+Email: rsschoultz@gmail.com
 
 ---
 
@@ -384,7 +439,7 @@ python main.py
 Run tests:
 
 ```bash
-pytest
+python -m pytest
 ```
 
 Tests use an in-memory SQLite database — the real database file is never touched by the test suite.
@@ -400,21 +455,15 @@ python scripts/create_starter_db.py
 python -m PyInstaller benchabird.spec --clean
 ```
 
-Output: `dist/benchabird.exe` — single-file Windows executable (~50 MB).
+Output: `dist/benchabird.exe` — single-file Windows executable.
 
-The first command creates `release/benchabird.db`, a clean release starter
-database. Local development still uses the root `benchabird.db`, so you can keep
-working with imported legacy data while release builds ship a fresh starter DB.
-The starter DB contains reference classes/categories plus synthetic exhibitors
-whose names end with `_Demo`; it excludes real exhibitors, entries, results, and
-historical show data.
+The first command creates `release/benchabird.db` — a clean starter database containing only class definitions and three synthetic demo exhibitors. This is what ships inside the exe. The local `benchabird.db` in the project root is the development database and is never bundled.
 
 **Build requirements:**
 - `pyinstaller >= 6.0.0`
 - All packages in `requirements.txt` installed in the active Python environment
 - `benchabird_app/logo.png` and `benchabird_app/icon.ico` present (bundled via spec)
-- `benchabird_app/benchabird.db` present for local development/source reference
-- `benchabird_app/release/benchabird.db` generated before building (starter database, copied on first launch)
+- `benchabird_app/release/benchabird.db` generated by `create_starter_db.py` before building
 
 The spec file (`benchabird.spec`) handles all data bundling and hidden imports automatically.
 
@@ -430,33 +479,25 @@ benchabird_app/
 ├── requirements.txt
 ├── logo.png                    # Bundled club logo
 ├── icon.ico                    # App icon
-├── benchabird.db               # Local development database
-├── release/benchabird.db       # Generated clean starter database for releases
+├── benchabird.db               # Local development database (not bundled in release)
+├── release/benchabird.db       # Clean starter database — generated by create_starter_db.py
 │
 ├── models/                     # Peewee ORM models (SQLite)
-│   ├── database.py             # SqliteDatabase + BaseModel
+│   ├── database.py
 │   ├── exhibitor.py
 │   ├── show_entry.py           # ShowEntry, CalculatedEntry, LateEntry
 │   ├── reference.py            # ShowDetails (incl. logo_data BLOB), HallOfFame, …
 │   └── __init__.py             # ALL_MODELS list
 │
 ├── repository/                 # DB query layer
-│   ├── exhibitor_repo.py
-│   ├── results_repo.py
-│   └── …
-│
 ├── controllers/                # Thin coordination layer
-│   ├── exhibitor_ctrl.py
-│   ├── entry_ctrl.py
-│   └── …
 │
 ├── services/                   # Business logic
-│   ├── calculate_service.py    # Ticket number assignment
-│   ├── ticket_pdf_service.py   # Cage ticket PDF (logo watermark per page)
-│   ├── export_service.py       # CSV / Excel export via pandas
-│   ├── archive_service.py      # DB snapshot save / restore
-│   ├── search_service.py       # Global multi-table search
-│   ├── scan_parser_service.py  # QR/barcode scan parsing for results entry
+│   ├── calculate_service.py
+│   ├── ticket_pdf_service.py
+│   ├── export_service.py
+│   ├── archive_service.py
+│   ├── search_service.py
 │   ├── mobile_scan_service.py  # Local HTTP receiver for mobile QR scanning
 │   ├── webcam_scan_service.py  # Optional OpenCV webcam QR scanning
 │   └── reports/                # One module per PDF report
@@ -467,42 +508,32 @@ benchabird_app/
 │       ├── special_winners.py
 │       ├── prize_money.py
 │       ├── address_tags.py
-│       └── exhibitor_list.py
+│       ├── exhibitor_list.py
+│       ├── entry_confirmation.py
+│       ├── results_by_exhibitor.py
+│       └── exhibitor_bundle.py
 │
 ├── views/                      # CustomTkinter UI
-│   ├── main_window.py          # Shell, sidebar, keyboard shortcuts
-│   ├── dashboard.py            # Live stats, workflow checklist, bar chart
-│   ├── setup_view.py           # Show details + logo upload/preview
+│   ├── main_window.py
+│   ├── dashboard.py
+│   ├── setup_view.py
 │   ├── exhibitors_view.py
 │   ├── entries_view.py
-│   ├── late_entries_view.py
 │   ├── results_view.py
-│   ├── special_view.py
-│   ├── special_list_view.py
-│   ├── tickets_view.py
 │   ├── reports_view.py
-│   ├── hall_of_fame_view.py
-│   ├── notes_view.py
-│   ├── search_view.py          # Global search with category grouping
-│   ├── archive_view.py         # Snapshot save / restore
-│   ├── sql_editor_view.py      # Direct SQL with scrollable results
-│   ├── help_view.py            # In-app how-to guide (tabbed)
-│   ├── _mobile_scanner_dialog.py # Pairing QR/status dialog for phone scanner
-│   ├── _paginated_table.py     # Reusable paginated table (50 rows/page, loading state)
-│   ├── pdf_preview_window.py   # In-app PDF preview (Print, Save As)
-│   ├── _bulk_edit_dialog.py    # Bulk add / rename / delete / reassign entries
-│   ├── _entry_dialog.py        # Add/edit entry with class autocomplete
-│   ├── _exhibitor_dialog.py    # Add/edit exhibitor with label toggle
-│   ├── _late_entry_dialog.py
-│   ├── _special_dialog.py
-│   └── _special_list_dialog.py
+│   ├── help_view.py            # In-app how-to guide with Ko-fi support link
+│   ├── pdf_preview_window.py
+│   └── …
 │
-└── tests/                      # pytest suite, in-memory DB
+├── scripts/
+│   └── create_starter_db.py    # Generates release/benchabird.db (clean, no real data)
+│
+└── tests/                      # pytest suite — in-memory DB, no file I/O
 ```
 
 ### Database
 
-SQLite via Peewee ORM. Schema migrations run silently on startup via `ALTER TABLE … ADD COLUMN` in `main.py:_migrate_db()` — existing databases upgrade without data loss. The `logo_data` field (BLOB) stores the club logo bytes directly in the database, eliminating file-path dependencies.
+SQLite via Peewee ORM. Schema migrations run silently on startup via `ALTER TABLE … ADD COLUMN` in `main.py:_migrate_db()` — existing databases upgrade without data loss.
 
 ---
 
@@ -517,7 +548,6 @@ SQLite via Peewee ORM. Schema migrations run silently on startup via `ALTER TABL
 | `Pillow` | ≥ 10.0 | Image handling — logo loading, watermark blending |
 | `qrcode[pil]` | ≥ 7.4 | QR code generation embedded in cage tickets |
 | `opencv-python` | ≥ 4.10 | Optional desktop webcam QR scanning |
-| Python stdlib HTTP server | bundled | Local mobile companion scan receiver |
 | `pandas` | ≥ 2.0 | CSV and Excel export via `openpyxl` |
 | `pyodbc` | ≥ 5.0 | Legacy Access MDB import |
 | `pyinstaller` | ≥ 6.0 | Single-file Windows executable packaging |
