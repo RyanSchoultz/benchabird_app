@@ -21,6 +21,7 @@ This report is an offline judging artifact, not an interactive result-entry work
 2. Add a category-based result capture screen that mirrors the printed catalogue ordering.
 3. Keep the existing Results screen for corrections, scanning, exports, and broad review.
 4. De-emphasize Judge Mode once the category capture workflow exists.
+5. Allow the show manager to reallocate a bird to another valid class while capturing a judge sheet.
 
 ## Non-Goals
 
@@ -39,10 +40,11 @@ This report is an offline judging artifact, not an interactive result-entry work
 5. Show manager opens `Judging Capture`.
 6. Show manager selects a category/species/type.
 7. App shows entries for that selected category in the same order as the PDF.
-8. Show manager selects radio-button results per exhibit.
-9. Show manager clicks `Save Category Results`.
-10. App bulk-saves results and NB flags.
-11. User prints Results, Results by Exhibitor, Special Winners, Prize Money, or other post-show reports.
+8. If the judge sheet identifies a class correction, the show manager changes that exhibit's class.
+9. Show manager selects radio-button results per exhibit.
+10. Show manager clicks `Save Category Results`.
+11. App bulk-saves class changes, results, and NB flags.
+12. User prints Results, Results by Exhibitor, Special Winners, Prize Money, or other post-show reports.
 
 ## PDF Design
 
@@ -110,20 +112,43 @@ The capture screen should:
 - Let the user select one category/species/type.
 - Show entries in the same order as the PDF.
 - Display row context: exhibit number, class, colour/description, and current saved result/NB state.
+- Let the operator change the row's class to any valid `class_def.class_code`.
 - Provide mutually exclusive radio buttons per row:
   `1st`, `2nd`, `3rd`, `4th`, `5th`, `BOB`, `R/U BOB`, `Champion`, `Reserve`, `NB`, `Clear`
 - Save all selected rows in the current category with one `Save Category Results` button.
 - Leave rows unchanged if the operator makes no selection and the row already has an existing result.
 - Show a confirmation/status message such as `Saved 18 updates for Red Factor`.
 
+### Class Reallocation
+
+Judging Capture should support class corrections discovered during judging.
+
+For each row, show the current class code and provide a compact `Change Class` control. The control can be a combobox or small dialog, but it must search/select from valid `class_def.class_code` values and should display enough context to avoid mistakes:
+
+- class code
+- colour/description
+- category/species/type
+- main class
+
+The operator may move a bird to any valid class, not only classes inside the current category. If the selected class belongs to a different category/species/type than the currently captured page, show a warning before save:
+
+`This moves exhibit #123 from Gloster to Red Factor. It will disappear from this page after saving.`
+
+On save, the app updates `calculated_entry.class_code` for that AutoNum before reloading the category. If `calculated_entry.source_entry_auto_num` exists, the implementation should also update the linked `show_entry.class_code` for the same source entry so the pre-show entry record and benched record stay aligned. If no source link exists, update only `calculated_entry` and show the correction in reports that are based on benched birds.
+
+Class reallocation should preserve the exhibit AutoNum. Do not reallocate ticket numbers or renumber other birds.
+
 ## Saving Semantics
 
 For each row on save:
 
+- A class change updates the exhibit's class while preserving its AutoNum.
 - `NB` marks the exhibit Not Benched and clears any placing result.
 - A placing result records the result and removes any existing NB flag.
 - `Clear` clears the result and removes any NB flag.
 - No selection leaves the current result and NB state unchanged.
+
+If both class and result change on the same row, save both changes in one transaction. If either part fails, roll back the row's class/result changes and report the error.
 
 This matches existing `results_service.record_result` and `not_benched_service` behavior.
 
@@ -131,6 +156,8 @@ This matches existing `results_service.record_result` and `not_benched_service` 
 
 - If Calculate has not been run and no calculated entries exist, show a message: `Run Calculate before printing or capturing judging sheets.`
 - If class/category metadata is incomplete, still show entries grouped under `(Unclassified)` or `(Unknown)` rather than hiding them.
+- If the selected replacement class does not exist in `class_def`, block save and show `Select a valid class`.
+- If a class change moves a row out of the active category, warn before saving and reload the category after save.
 - If a category has no entries, show an empty state and disable `Save Category Results`.
 - If saving fails mid-category, report the error and avoid claiming the whole category was saved.
 
@@ -145,6 +172,10 @@ Add focused tests before implementation:
 - Capture save records placing results and clears NB.
 - Capture save records NB and clears placing result.
 - Capture save clears both result and NB.
+- Capture save updates an exhibit's class and preserves AutoNum.
+- Capture save can update class and result in the same transaction.
+- Class reallocation rejects invalid class codes.
+- Class reallocation to another category removes the row from the current category after reload.
 - Existing Results screen still imports and functions after Judge Mode de-emphasis.
 
 ## Documentation
@@ -154,6 +185,7 @@ Update `README.md`:
 - Explain the paper judging workflow.
 - Document `Judges Catalogue` under Reports.
 - Document `Judging Capture` under Results.
+- Document that Judging Capture can correct an exhibit's class while preserving the exhibit number.
 - Clarify that judges complete printed sheets and the show manager captures results afterward.
 
 ## Design Decisions
@@ -161,3 +193,5 @@ Update `README.md`:
 1. The PDF includes the full modern result set: `1st`, `2nd`, `3rd`, `4th`, `5th`, `BOB`, `R/U BOB`, `Champion`, `Reserve`, and `NB`.
 2. `Judging Capture` is a modal dialog launched from Results. This keeps the main navigation smaller and matches the existing app pattern for focused workflows.
 3. Judge Mode is de-emphasized by replacing its toolbar button with `Judging Capture`. The old module can be removed in a later cleanup after the paper workflow has been used successfully.
+4. Class reallocation is allowed to any valid class. Moving out of the current category is permitted with a warning because the row will move to the replacement category after save.
+5. Class reallocation preserves AutoNum and does not renumber other exhibits.
