@@ -71,3 +71,9 @@ def test_judge_mode_dialog_imports():
     from views._judge_mode_dialog import JudgeModeDialog
 
     assert JudgeModeDialog.__name__ == "JudgeModeDialog"
+
+
+def test_results_view_imports_with_judge_mode():
+    from views.results_view import ResultsView
+
+    assert ResultsView.__name__ == "ResultsView"
