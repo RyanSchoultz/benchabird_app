@@ -36,7 +36,7 @@ A standalone Windows desktop application for managing cage-bird shows. Replaces 
 | **Entries** | Raw and calculated entry views. Add individually, bulk-add by exhibitor, bulk rename classes, bulk delete or reassign. Export to CSV or Excel |
 | **Late Entries** | Separate tracking for post-deadline entries |
 | **Calculate** | Assigns sequential ticket numbers to all entries. Run after adding entries, before printing tickets |
-| **Results** | Rapid-entry mode: enter or scan exhibit number/QR payload → result dropdown → save. Mark Not Benched. Export to CSV or Excel |
+| **Results** | Rapid-entry mode: enter or scan exhibit number/QR payload → result dropdown → save. Supports manual entry, USB scanners, desktop webcam QR scanning, and local mobile companion scanning. Mark Not Benched. Export to CSV or Excel |
 | **Special Winners** | Assign special prize winners by exhibit number |
 | **Special Prizes** | Manage the prize list: description, trophy type, cash amounts |
 | **Tickets** | Preview and print cage tickets as PDF. Each ticket has exhibit #, class, exhibitor name, QR code, and club logo watermark |
@@ -167,13 +167,14 @@ Typical order of operations for running a show:
 
 **QR / scanner entry:**
 - Cage-ticket QR codes include `AutoNum:<ticket> ExhNo:<exhibitor> Class:<code>`
-- A USB barcode/QR scanner can be used like a keyboard: click `Exhibit #`, scan the ticket, then choose the result
-- Click `Scan QR` to use a local desktop webcam. A successful scan fills `Exhibit #` and moves focus to Result
-- Click `Mobile Scan` to start a local companion receiver. Scan the pairing QR with a phone on the same Wi-Fi/network, then scan ticket QRs from the phone companion page. Accepted scans fill `Exhibit #` on the desktop and move focus to Result
-- Mobile live camera scanning depends on phone/browser security rules. If the browser blocks camera access over the local network, use the companion page's text field with a phone QR scanner app or pasted payload
-- If the phone cannot connect, check that both devices are on the same network and that Windows Firewall allows the Benchabird app to accept local connections
+- **USB scanner:** click `Exhibit #`, scan the ticket QR, then choose the result. Most USB barcode/QR scanners act like keyboards.
+- **Desktop webcam:** click `Scan QR`, hold the cage-ticket QR code in front of the desktop webcam, then choose the result once the scan is accepted.
+- **Mobile companion:** click `Mobile Scan` to start a temporary local receiver. Scan the pairing QR with a phone on the same Wi-Fi/network, then use the phone page to scan ticket QRs. Accepted scans fill `Exhibit #` on the desktop and move focus to Result.
+- The mobile companion does not save results from the phone. The desktop operator still chooses the placing and presses Enter to save.
+- Mobile live camera scanning depends on phone/browser security rules. If the browser blocks camera access over the local network, use the companion page's text field with a phone QR scanner app or pasted payload.
+- If the phone cannot connect, check that both devices are on the same network and that Windows Firewall allows the Benchabird app to accept local/private network connections.
 - Pasted/scanned legacy QR text with `ExhNo:<n> Class:<code>` is still accepted when it uniquely matches a calculated entry
-- If OpenCV or a webcam is unavailable, manual and USB scanner entry still work
+- If OpenCV, a webcam, the phone camera, or local networking is unavailable, manual entry and USB scanner entry still work.
 
 **Not Benched:**
 - Type the exhibit number, click `Not Benched`
@@ -344,6 +345,8 @@ Re-imports from the legacy Access MDB file. Overwrites exhibitors, classes, Hall
 | `Ctrl+X` | Navigate to Exhibitors |
 | `Ctrl+H` | Navigate to Help |
 | `Enter` | Results view: accept exhibit # / scan → result → save |
+| `Mobile Scan` button | Results view: start temporary phone companion receiver |
+| `Scan QR` button | Results view: start desktop webcam QR scanner |
 | `Ctrl+Enter` | SQL Editor: run query |
 | `Escape` | Close most dialogs |
 
