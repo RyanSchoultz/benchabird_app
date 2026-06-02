@@ -9,6 +9,7 @@ from services.not_benched_service import (
 )
 from views._paginated_table import PaginatedTable
 from views._webcam_scanner_dialog import WebcamScannerDialog
+from views._mobile_scanner_dialog import MobileScannerDialog
 
 _repo = ResultsRepo()
 
@@ -60,6 +61,9 @@ class ResultsView(ctk.CTkFrame):
         ctk.CTkButton(form, text="Scan QR", width=90,
                       fg_color=("gray75", "gray35"), text_color=("gray10", "gray90"),
                       command=self._open_webcam_scanner).pack(side="left", padx=4, pady=8)
+        ctk.CTkButton(form, text="Mobile Scan", width=105,
+                      fg_color=("gray75", "gray35"), text_color=("gray10", "gray90"),
+                      command=self._open_mobile_scanner).pack(side="left", padx=4, pady=8)
         self._msg = ctk.CTkLabel(form, text="", font=ctk.CTkFont(size=11),
                                   text_color=("gray40", "gray60"))
         self._msg.pack(side="left", padx=12)
@@ -147,6 +151,16 @@ class ResultsView(ctk.CTkFrame):
         WebcamScannerDialog(self, self._accept_webcam_payload)
 
     def _accept_webcam_payload(self, payload):
+        exhibit_no = self._resolve_scan_text(payload)
+        if exhibit_no is None:
+            return False
+        self._set_resolved_exhibit(exhibit_no)
+        return True
+
+    def _open_mobile_scanner(self):
+        MobileScannerDialog(self, self._accept_mobile_payload)
+
+    def _accept_mobile_payload(self, payload):
         exhibit_no = self._resolve_scan_text(payload)
         if exhibit_no is None:
             return False

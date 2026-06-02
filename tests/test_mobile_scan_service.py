@@ -142,3 +142,9 @@ def test_mobile_scanner_dialog_imports():
     from views._mobile_scanner_dialog import MobileScannerDialog
 
     assert MobileScannerDialog.__name__ == "MobileScannerDialog"
+
+
+def test_results_view_imports_with_mobile_scanner():
+    from views.results_view import ResultsView
+
+    assert ResultsView.__name__ == "ResultsView"
