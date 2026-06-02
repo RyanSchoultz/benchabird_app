@@ -36,7 +36,7 @@ A standalone Windows desktop application for managing cage-bird shows. Replaces 
 | **Entries** | Raw and calculated entry views. Add individually, bulk-add by exhibitor, bulk rename classes, bulk delete or reassign. Export to CSV or Excel |
 | **Late Entries** | Separate tracking for post-deadline entries |
 | **Calculate** | Assigns sequential ticket numbers to all entries. Run after adding entries, before printing tickets |
-| **Results** | Rapid-entry mode: Enter key chains exhibit number → result dropdown → save. Mark Not Benched. Export to CSV or Excel |
+| **Results** | Rapid-entry mode: enter or scan exhibit number/QR payload → result dropdown → save. Mark Not Benched. Export to CSV or Excel |
 | **Special Winners** | Assign special prize winners by exhibit number |
 | **Special Prizes** | Manage the prize list: description, trophy type, cash amounts |
 | **Tickets** | Preview and print cage tickets as PDF. Each ticket has exhibit #, class, exhibitor name, QR code, and club logo watermark |
@@ -165,6 +165,12 @@ Typical order of operations for running a show:
 2. Select the result (1st, 2nd, 3rd, 4th, 5th, BOB, R/U BOB, Champion, Reserve) and press **Enter** to save
 3. Focus returns to the Exhibit # field — ready for the next entry
 
+**QR / scanner entry:**
+- Cage-ticket QR codes include `AutoNum:<ticket> ExhNo:<exhibitor> Class:<code>`
+- A USB barcode/QR scanner can be used like a keyboard: click `Exhibit #`, scan the ticket, then choose the result
+- Pasted/scanned legacy QR text with `ExhNo:<n> Class:<code>` is still accepted when it uniquely matches a calculated entry
+- Desktop webcam scanning and a lightweight mobile companion scanner are planned follow-on stages
+
 **Not Benched:**
 - Type the exhibit number, click `Not Benched`
 - NB entries appear in the `NB` column highlighted in red
@@ -202,7 +208,7 @@ Each ticket contains:
 - Class code
 - Exhibitor number and name
 - Show name
-- QR code (top-right) encoding `ExhNo:<n> Class:<code>`
+- QR code (top-right) encoding `AutoNum:<ticket> ExhNo:<n> Class:<code>`
 - Club logo watermark (if set)
 
 ---
@@ -333,7 +339,7 @@ Re-imports from the legacy Access MDB file. Overwrites exhibitors, classes, Hall
 | `Ctrl+T` | Navigate to Tickets |
 | `Ctrl+X` | Navigate to Exhibitors |
 | `Ctrl+H` | Navigate to Help |
-| `Enter` | Results view: advance exhibit # → result → save |
+| `Enter` | Results view: accept exhibit # / scan → result → save |
 | `Ctrl+Enter` | SQL Editor: run query |
 | `Escape` | Close most dialogs |
 
@@ -429,6 +435,7 @@ benchabird_app/
 │   ├── export_service.py       # CSV / Excel export via pandas
 │   ├── archive_service.py      # DB snapshot save / restore
 │   ├── search_service.py       # Global multi-table search
+│   ├── scan_parser_service.py  # QR/barcode scan parsing for results entry
 │   └── reports/                # One module per PDF report
 │       ├── base.py             # Shared canvas, header, watermark helper
 │       ├── entries_received.py
@@ -466,7 +473,7 @@ benchabird_app/
 │   ├── _special_dialog.py
 │   └── _special_list_dialog.py
 │
-└── tests/                      # pytest suite — 73 tests, in-memory DB
+└── tests/                      # pytest suite, in-memory DB
 ```
 
 ### Database
