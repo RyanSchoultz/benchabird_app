@@ -135,6 +135,8 @@ Typical order of operations for running a show:
 4. If that exhibitor already has an entry for the same class, an orange duplicate warning appears
 5. Click Save (or press Enter on the class combo)
 
+**Per-class limits:** set `class_def.entry_limit` to a positive number to cap a class. Blank or `0` means unlimited. Normal entries and late entries count toward the same limit, and the add dialogs block entries once the class is full.
+
 **Bulk editing (click `Bulk Edit…`):**
 
 | Tab | What it does |
