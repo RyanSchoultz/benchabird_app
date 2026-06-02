@@ -126,27 +126,45 @@
     <h2 class="section-title">See it for yourself</h2>
     <p class="section-sub">A closer look at the key views.</p>
     <div class="gallery-grid">
-      <img
-        src="git_assets/image02.png"
-        alt="Benchabird Reports view — seven one-click PDF report buttons including Results Sheet, Show Catalogue, and Prize Money"
-        class="gallery-img"
-        width="991"
-        height="775"
-      >
-      <img
-        src="git_assets/image03.png"
-        alt="Benchabird SQL Editor — direct database access with query editor and scrollable results table"
-        class="gallery-img"
-        width="990"
-        height="837"
-      >
-      <img
-        src="git_assets/image04.png"
-        alt="Benchabird Help and How-To Guide — tabbed reference covering setup, exhibitors, entries, results, and more"
-        class="gallery-img"
-        width="1903"
-        height="977"
-      >
+      <figure class="gallery-figure" onclick="openLightbox('git_assets/image02.png', 'Reports — all seven PDF reports')">
+        <img
+          src="git_assets/image02.png"
+          alt="Benchabird Reports view — seven one-click PDF report buttons including Results Sheet, Show Catalogue, and Prize Money"
+          class="gallery-img"
+          width="991"
+          height="775"
+        >
+        <figcaption>
+          PDF Reports
+          <div class="caption-sub">Seven ready-to-print reports, one click each</div>
+        </figcaption>
+      </figure>
+      <figure class="gallery-figure" onclick="openLightbox('git_assets/image03.png', 'SQL Editor — direct database access')">
+        <img
+          src="git_assets/image03.png"
+          alt="Benchabird SQL Editor — direct database access with query editor and scrollable results table"
+          class="gallery-img"
+          width="990"
+          height="837"
+        >
+        <figcaption>
+          SQL Editor
+          <div class="caption-sub">Direct database access for power users</div>
+        </figcaption>
+      </figure>
+      <figure class="gallery-figure" onclick="openLightbox('git_assets/image04.png', 'Help &amp; How-To Guide')">
+        <img
+          src="git_assets/image04.png"
+          alt="Benchabird Help and How-To Guide — tabbed reference covering setup, exhibitors, entries, results, and more"
+          class="gallery-img"
+          width="1903"
+          height="977"
+        >
+        <figcaption>
+          Help Guide
+          <div class="caption-sub">Built-in how-to covering every feature</div>
+        </figcaption>
+      </figure>
     </div>
   </div>
 </div>
@@ -211,6 +229,13 @@
   </div>
 </section>
 
+</main>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()">
+</div>
+
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">
@@ -233,12 +258,28 @@
       Ko-fi
     </a>
   </div>
-</main>
-
 </footer>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+
+  function openLightbox(src, alt) {
+    const lb = document.getElementById('lightbox');
+    const img = document.getElementById('lightbox-img');
+    img.src = src;
+    img.alt = alt;
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeLightbox();
+  });
 </script>
 </body>
 </html>
