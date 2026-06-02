@@ -137,6 +137,8 @@ Typical order of operations for running a show:
 
 **Per-class limits:** set `class_def.entry_limit` to a positive number to cap a class. Blank or `0` means unlimited. Normal entries and late entries count toward the same limit, and the add dialogs block entries once the class is full.
 
+**Judge assignment:** set `class_def.judge` to assign a judge to a class. Blank means unassigned. Assigned judges appear on the Show Catalogue class headers and in the Results Sheet judge column.
+
 **Bulk editing (click `Bulk Edit…`):**
 
 | Tab | What it does |
