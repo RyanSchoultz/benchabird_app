@@ -79,3 +79,9 @@ def test_bundle_grows_with_address_label_when_flagged(test_db):
     with_label = generate_exhibitor_bundle(7, include_address_label=True)
 
     assert len(with_label) > len(without_label)
+
+
+def test_exhibitor_bundle_dialog_imports():
+    from views._exhibitor_bundle_dialog import ExhibitorBundleDialog
+
+    assert ExhibitorBundleDialog.__name__ == "ExhibitorBundleDialog"
