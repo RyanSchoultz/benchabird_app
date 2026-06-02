@@ -8,3 +8,4 @@ dist/
 build/
 *.spec.bak
 .pytest_cache/
+.superpowers/
