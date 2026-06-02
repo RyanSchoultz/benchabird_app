@@ -168,8 +168,10 @@ Typical order of operations for running a show:
 **QR / scanner entry:**
 - Cage-ticket QR codes include `AutoNum:<ticket> ExhNo:<exhibitor> Class:<code>`
 - A USB barcode/QR scanner can be used like a keyboard: click `Exhibit #`, scan the ticket, then choose the result
+- Click `Scan QR` to use a local desktop webcam. A successful scan fills `Exhibit #` and moves focus to Result
 - Pasted/scanned legacy QR text with `ExhNo:<n> Class:<code>` is still accepted when it uniquely matches a calculated entry
-- Desktop webcam scanning and a lightweight mobile companion scanner are planned follow-on stages
+- If OpenCV or a webcam is unavailable, manual and USB scanner entry still work
+- A lightweight mobile companion scanner is planned as a follow-on stage
 
 **Not Benched:**
 - Type the exhibit number, click `Not Benched`
@@ -436,6 +438,7 @@ benchabird_app/
 │   ├── archive_service.py      # DB snapshot save / restore
 │   ├── search_service.py       # Global multi-table search
 │   ├── scan_parser_service.py  # QR/barcode scan parsing for results entry
+│   ├── webcam_scan_service.py  # Optional OpenCV webcam QR scanning
 │   └── reports/                # One module per PDF report
 │       ├── base.py             # Shared canvas, header, watermark helper
 │       ├── entries_received.py
@@ -492,6 +495,7 @@ SQLite via Peewee ORM. Schema migrations run silently on startup via `ALTER TABL
 | `pymupdf` (`fitz`) | ≥ 1.23 | Render PDF pages to images for in-app preview |
 | `Pillow` | ≥ 10.0 | Image handling — logo loading, watermark blending |
 | `qrcode[pil]` | ≥ 7.4 | QR code generation embedded in cage tickets |
+| `opencv-python` | ≥ 4.10 | Optional desktop webcam QR scanning |
 | `pandas` | ≥ 2.0 | CSV and Excel export via `openpyxl` |
 | `pyodbc` | ≥ 5.0 | Legacy Access MDB import |
 | `pyinstaller` | ≥ 6.0 | Single-file Windows executable packaging |

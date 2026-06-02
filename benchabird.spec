@@ -28,6 +28,7 @@ a = Analysis(
         'reportlab.lib.colors',
         'qrcode',
         'qrcode.constants',
+        'cv2',
         'pymupdf',
         'fitz',
         'PIL',

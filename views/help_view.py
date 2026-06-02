@@ -199,6 +199,19 @@ SECTIONS = {
             "Clicking Not Benched again on the same exhibit number removes the flag.\n\n"
             "Not-benched entries are highlighted in the Results Sheet PDF report."
         )),
+        ("QR Scanner Entry", (
+            "Cage-ticket QR codes include AutoNum, exhibitor number, and class code.\n\n"
+            "USB scanner:\n"
+            "1. Click the Exhibit # field\n"
+            "2. Scan the ticket QR code\n"
+            "3. Choose the result and press Enter to save\n\n"
+            "Webcam scanner:\n"
+            "1. Click Scan QR\n"
+            "2. Hold the cage-ticket QR code in front of the desktop webcam\n"
+            "3. When the scan is accepted, choose the result and press Enter to save\n\n"
+            "If the webcam or OpenCV scanner dependency is unavailable, manual entry "
+            "and USB scanner entry still work."
+        )),
         ("Filter and Export", (
             "The filter bar below the toolbar filters the results table live by exhibit "
             "number or result value.\n\n"
@@ -227,7 +240,7 @@ SECTIONS = {
             "  • Class code\n"
             "  • Exhibitor number and name\n"
             "  • Show name\n"
-            "  • QR code (top-right) encoding ExhNo and Class\n"
+            "  • QR code (top-right) encoding AutoNum, ExhNo, and Class\n"
             "  • Club logo watermark (if set in Show Setup)\n\n"
             "Tickets are printed 21 per A4 page (3 columns × 7 rows)."
         )),
