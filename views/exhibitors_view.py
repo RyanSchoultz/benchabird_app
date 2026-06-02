@@ -1,5 +1,6 @@
 # views/exhibitors_view.py
 import customtkinter as ctk
+from tkinter import filedialog, messagebox
 from controllers.exhibitor_ctrl import get_all, search, save, delete
 from repository.exhibitor_repo import ExhibitorRepo
 from views._paginated_table import PaginatedTable
@@ -38,6 +39,9 @@ class ExhibitorsView(ctk.CTkFrame):
         ctk.CTkButton(toolbar, text="Export", width=80,
                       fg_color=("gray80", "gray30"), text_color=("gray10", "gray90"),
                       command=self._export).pack(side="right", padx=4)
+        ctk.CTkButton(toolbar, text="Import", width=80,
+                      fg_color=("gray80", "gray30"), text_color=("gray10", "gray90"),
+                      command=self._import_spreadsheet).pack(side="right", padx=4)
 
         self._search_var = ctk.StringVar()
         self._search_var.trace_add("write", lambda *_: self._load())
@@ -101,3 +105,36 @@ class ExhibitorsView(ctk.CTkFrame):
         headers = ["ExhNo", "Name", "Address", "Suburb", "Town", "ZipCode",
                    "TelHome", "Cell", "Email", "Club", "PrintAddress"]
         export_data(rows, headers, "exhibitors.csv")
+
+    def _import_spreadsheet(self):
+        path = filedialog.askopenfilename(
+            title="Import Exhibitors",
+            filetypes=[
+                ("Spreadsheet files", "*.csv *.xlsx *.xls"),
+                ("CSV files", "*.csv"),
+                ("Excel files", "*.xlsx *.xls"),
+                ("All files", "*.*"),
+            ],
+        )
+        if not path:
+            return
+
+        try:
+            from services.exhibitor_import_service import import_exhibitors_from_spreadsheet
+
+            summary = import_exhibitors_from_spreadsheet(path)
+            self._load()
+            lines = [
+                "Exhibitor import complete.",
+                "",
+                f"Created: {summary.created}",
+                f"Updated: {summary.updated}",
+                f"Skipped: {summary.skipped}",
+            ]
+            if summary.errors:
+                preview = "\n".join(summary.errors[:8])
+                more = "" if len(summary.errors) <= 8 else f"\n...and {len(summary.errors) - 8} more."
+                lines.extend(["", "Issues:", preview + more])
+            messagebox.showinfo("Import Exhibitors", "\n".join(lines), parent=self)
+        except Exception as exc:
+            messagebox.showerror("Import Exhibitors", str(exc), parent=self)
