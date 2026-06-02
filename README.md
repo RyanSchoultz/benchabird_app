@@ -241,7 +241,7 @@ Click any report button to generate and preview it:
 | Exhibitor Bundle | One exhibitor's summary, entries, tickets, late entries, results, and address label |
 | Results by Exhibitor | Results grouped by exhibitor |
 
-**Exhibitor Bundle:** click `Exhibitor Bundle` in Reports, search for an exhibitor, choose bundle sections, then preview/print one PDF containing that exhibitor's summary, entries, tickets when calculated, late entries, results when recorded, and address label when flagged.
+**Exhibitor Bundle:** click `Exhibitor Bundle` in Reports, search by exhibitor name, exhibitor number, or exhibit number, choose bundle sections, then preview/print one PDF containing that exhibitor's summary, entries, tickets when calculated, late entries, results when recorded, and address label when flagged.
 
 **In the preview window:**
 - `← Prev` / `Next →` — navigate pages

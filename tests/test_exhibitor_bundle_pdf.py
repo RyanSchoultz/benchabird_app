@@ -6,6 +6,8 @@ from models.show_entry import CalculatedEntry, LateEntry, ShowEntry
 from services.reports.exhibitor_bundle import (
     ExhibitorBundleError,
     generate_exhibitor_bundle,
+    generate_exhibitor_bundle_for_exhibitor,
+    search_exhibitors_for_bundle,
 )
 
 
@@ -81,6 +83,34 @@ def test_bundle_grows_with_address_label_when_flagged(test_db):
     assert len(with_label) > len(without_label)
 
 
+def test_bundle_for_exhibitor_handles_missing_exhibitor_number_by_name(test_db):
+    exhibitor = Exhibitor.create(name="Barnard, Andre.")
+    CalculatedEntry.create(
+        auto_num=42,
+        exh_no=None,
+        name="Barnard, Andre.",
+        class_code="A1",
+    )
+
+    pdf = generate_exhibitor_bundle_for_exhibitor(exhibitor.id)
+
+    assert pdf[:4] == b"%PDF"
+    assert len(pdf) > 1500
+
+
+def test_search_bundle_exhibitors_matches_name_and_exhibit_number(test_db):
+    alice = Exhibitor.create(exh_no=7, name="Alice Bird")
+    barnard = Exhibitor.create(name="Barnard, Andre.")
+    CalculatedEntry.create(auto_num=42, exh_no=None, name="Barnard, Andre.", class_code="A1")
+
+    name_matches = search_exhibitors_for_bundle("barnard")
+    exhibit_matches = search_exhibitors_for_bundle("42")
+
+    assert [row.exhibitor.id for row in name_matches] == [barnard.id]
+    assert [row.exhibitor.id for row in exhibit_matches] == [barnard.id]
+    assert alice.id not in [row.exhibitor.id for row in exhibit_matches]
+
+
 def test_exhibitor_bundle_dialog_imports():
     from views._exhibitor_bundle_dialog import ExhibitorBundleDialog
 
@@ -91,3 +121,16 @@ def test_reports_view_imports_with_exhibitor_bundle():
     from views.reports_view import ReportsView
 
     assert ReportsView.__name__ == "ReportsView"
+
+
+def test_bundle_dialog_selection_text_never_shows_none(test_db):
+    from views._exhibitor_bundle_dialog import format_selected_summary
+
+    exhibitor = Exhibitor.create(name="Barnard, Andre.")
+    match = search_exhibitors_for_bundle("barnard")[0]
+
+    text = format_selected_summary(match)
+
+    assert exhibitor.name in text
+    assert "#None" not in text
+    assert "not assigned" in text

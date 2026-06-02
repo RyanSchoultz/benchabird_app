@@ -32,6 +32,13 @@ class BundleEntry:
     not_benched: bool = False
 
 
+@dataclass(frozen=True)
+class BundleExhibitorMatch:
+    exhibitor: Exhibitor
+    matching_exhibit_no: int | None
+    entry_count: int
+
+
 def _exhibitor_or_error(exh_no: int) -> Exhibitor:
     exhibitor = Exhibitor.get_or_none(Exhibitor.exh_no == exh_no)
     if exhibitor is None:
@@ -39,17 +46,66 @@ def _exhibitor_or_error(exh_no: int) -> Exhibitor:
     return exhibitor
 
 
-def _regular_entries(exh_no: int) -> list[BundleEntry]:
+def _exhibitor_id_or_error(exhibitor_id: int) -> Exhibitor:
+    exhibitor = Exhibitor.get_or_none(Exhibitor.id == exhibitor_id)
+    if exhibitor is None:
+        raise ExhibitorBundleError(f"No exhibitor found for row #{exhibitor_id}.")
+    return exhibitor
+
+
+def _name_matches(entry_name: str | None, exhibitor: Exhibitor) -> bool:
+    if not entry_name or not exhibitor.name:
+        return False
+    return entry_name.strip().lower() == exhibitor.name.strip().lower()
+
+
+def _calculated_entries_for(exhibitor: Exhibitor) -> list[CalculatedEntry]:
+    rows = list(CalculatedEntry.select().order_by(CalculatedEntry.auto_num))
+    return [
+        entry
+        for entry in rows
+        if (
+            exhibitor.exh_no is not None
+            and entry.exh_no == exhibitor.exh_no
+        )
+        or _name_matches(entry.name, exhibitor)
+    ]
+
+
+def _show_entries_for(exhibitor: Exhibitor) -> list[ShowEntry]:
+    if exhibitor.exh_no is None:
+        return []
+    return list(
+        ShowEntry.select()
+        .where(ShowEntry.exh_no == exhibitor.exh_no)
+        .order_by(ShowEntry.auto_num)
+    )
+
+
+def _late_entries_for(exhibitor: Exhibitor) -> list[LateEntry]:
+    rows = list(LateEntry.select().order_by(LateEntry.auto_num))
+    return [
+        entry
+        for entry in rows
+        if (
+            exhibitor.exh_no is not None
+            and entry.exh_no == exhibitor.exh_no
+        )
+        or _name_matches(entry.name, exhibitor)
+    ]
+
+
+def _regular_entries(exhibitor: Exhibitor) -> list[BundleEntry]:
     ticket_by_auto = {
         row["auto_num"]: row["ticket_no"]
         for row in get_ticket_assignments()
-        if row["exh_no"] == exh_no
+        if (
+            exhibitor.exh_no is not None
+            and row["exh_no"] == exhibitor.exh_no
+        )
+        or _name_matches(row.get("name"), exhibitor)
     }
-    calculated = list(
-        CalculatedEntry.select()
-        .where(CalculatedEntry.exh_no == exh_no)
-        .order_by(CalculatedEntry.auto_num)
-    )
+    calculated = _calculated_entries_for(exhibitor)
     if calculated:
         return [
             BundleEntry(
@@ -60,11 +116,7 @@ def _regular_entries(exh_no: int) -> list[BundleEntry]:
             )
             for entry in calculated
         ]
-    raw = list(
-        ShowEntry.select()
-        .where(ShowEntry.exh_no == exh_no)
-        .order_by(ShowEntry.auto_num)
-    )
+    raw = _show_entries_for(exhibitor)
     return [
         BundleEntry(
             ticket_no=None,
@@ -76,7 +128,7 @@ def _regular_entries(exh_no: int) -> list[BundleEntry]:
     ]
 
 
-def _late_entries(exh_no: int) -> list[BundleEntry]:
+def _late_entries(exhibitor: Exhibitor) -> list[BundleEntry]:
     return [
         BundleEntry(
             ticket_no=None,
@@ -84,10 +136,53 @@ def _late_entries(exh_no: int) -> list[BundleEntry]:
             class_code=entry.class_code,
             source="Late",
         )
-        for entry in LateEntry.select()
-        .where(LateEntry.exh_no == exh_no)
-        .order_by(LateEntry.auto_num)
+        for entry in _late_entries_for(exhibitor)
     ]
+
+
+def _entry_count_for(exhibitor: Exhibitor) -> int:
+    return (
+        len(_calculated_entries_for(exhibitor))
+        or len(_show_entries_for(exhibitor))
+    ) + len(_late_entries_for(exhibitor))
+
+
+def _matching_exhibit_for_query(exhibitor: Exhibitor, query: str) -> int | None:
+    if not query.isdigit():
+        return None
+    for entry in [
+        *_calculated_entries_for(exhibitor),
+        *_show_entries_for(exhibitor),
+        *_late_entries_for(exhibitor),
+    ]:
+        if query in str(entry.auto_num):
+            return entry.auto_num
+    return None
+
+
+def search_exhibitors_for_bundle(query: str = "", limit: int = 100) -> list[BundleExhibitorMatch]:
+    q = query.strip().lower()
+    matches: list[BundleExhibitorMatch] = []
+    for exhibitor in Exhibitor.select().order_by(Exhibitor.name):
+        text_match = (
+            not q
+            or q in str(exhibitor.exh_no or "").lower()
+            or q in (exhibitor.name or "").lower()
+            or q in (exhibitor.email or "").lower()
+            or q in (exhibitor.club or "").lower()
+        )
+        matching_exhibit = _matching_exhibit_for_query(exhibitor, q) if q else None
+        if text_match or matching_exhibit is not None:
+            matches.append(
+                BundleExhibitorMatch(
+                    exhibitor=exhibitor,
+                    matching_exhibit_no=matching_exhibit,
+                    entry_count=_entry_count_for(exhibitor),
+                )
+            )
+        if len(matches) >= limit:
+            break
+    return matches
 
 
 def _line(c, y: float, text: str, font: str = "Helvetica", size: int = 9) -> float:
@@ -137,8 +232,45 @@ def generate_exhibitor_bundle(
     include_address_label: bool = True,
 ) -> bytes:
     exhibitor = _exhibitor_or_error(exh_no)
-    regular = _regular_entries(exh_no)
-    late = _late_entries(exh_no) if include_late else []
+    return _generate_exhibitor_bundle_for_row(
+        exhibitor,
+        sd=sd,
+        include_tickets=include_tickets,
+        include_late=include_late,
+        include_results=include_results,
+        include_address_label=include_address_label,
+    )
+
+
+def generate_exhibitor_bundle_for_exhibitor(
+    exhibitor_id: int,
+    sd=None,
+    include_tickets: bool = True,
+    include_late: bool = True,
+    include_results: bool = True,
+    include_address_label: bool = True,
+) -> bytes:
+    exhibitor = _exhibitor_id_or_error(exhibitor_id)
+    return _generate_exhibitor_bundle_for_row(
+        exhibitor,
+        sd=sd,
+        include_tickets=include_tickets,
+        include_late=include_late,
+        include_results=include_results,
+        include_address_label=include_address_label,
+    )
+
+
+def _generate_exhibitor_bundle_for_row(
+    exhibitor: Exhibitor,
+    sd=None,
+    include_tickets: bool = True,
+    include_late: bool = True,
+    include_results: bool = True,
+    include_address_label: bool = True,
+) -> bytes:
+    regular = _regular_entries(exhibitor)
+    late = _late_entries(exhibitor) if include_late else []
 
     result_by_auto = {
         row.exhibit_no: row.result
@@ -148,11 +280,16 @@ def generate_exhibitor_bundle(
 
     buf, c = new_canvas()
     page_num = 1
-    y = draw_page_header(c, f"Exhibitor Bundle #{exh_no}", sd)
+    bundle_label = (
+        f"#{exhibitor.exh_no}"
+        if exhibitor.exh_no is not None
+        else exhibitor.name or f"row {exhibitor.id}"
+    )
+    y = draw_page_header(c, f"Exhibitor Bundle {bundle_label}", sd)
 
     y = _section(c, y, "Exhibitor Summary")
     y = _line(c, y, f"Name: {exhibitor.name or ''}", "Helvetica-Bold", 10)
-    y = _line(c, y, f"Exhibitor #: {exhibitor.exh_no or ''}")
+    y = _line(c, y, f"Exhibitor #: {exhibitor.exh_no if exhibitor.exh_no is not None else 'not assigned'}")
     y = _line(c, y, f"Club: {exhibitor.club or ''}")
     y = _line(c, y, f"Phone: {exhibitor.cell_no or exhibitor.tel_home or ''}")
     y = _line(c, y, f"Email: {exhibitor.email or ''}")

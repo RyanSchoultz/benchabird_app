@@ -295,11 +295,13 @@ SECTIONS = {
             "Use Exhibitor Bundle when you need one exhibitor's paperwork in a single PDF.\n\n"
             "1. Go to Reports\n"
             "2. Click Exhibitor Bundle\n"
-            "3. Search by exhibitor number, name, email, or club\n"
+            "3. Search by exhibitor name, exhibitor number, exhibit number, email, or club\n"
             "4. Select the exhibitor and choose the bundle sections\n"
             "5. Preview, print, or save the generated PDF\n\n"
             "Bundles can include exhibitor details, entries, cage tickets after Calculate, late entries, "
-            "results when recorded, and an address label when the exhibitor is flagged for labels."
+            "results when recorded, and an address label when the exhibitor is flagged for labels. "
+            "If an exhibitor number is not assigned, the bundle still uses the selected exhibitor row and "
+            "matches calculated or late entries by exhibitor name."
         )),
         ("PDF Preview Window", (
             "The preview window opens after any report or ticket PDF is generated.\n\n"
