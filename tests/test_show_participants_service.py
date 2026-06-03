@@ -165,3 +165,52 @@ def test_get_participant_entries_includes_class_description(test_db):
     ClassGlossary.create(class_code="SC01", description="Open Cock")
     rows = get_participant_entries(1)
     assert rows[0].class_desc == "Open Cock"
+
+
+# ── Task 2: unenrolled + enrol ────────────────────────────────────────────────
+
+def test_get_unenrolled_exhibitors_returns_only_null_exh_no(test_db):
+    from services.show_participants_service import get_unenrolled_exhibitors
+    _seed(test_db)
+    results = get_unenrolled_exhibitors()
+    assert all(e.exh_no is None for e in results)
+    assert any(e.name == "Cupido, C." for e in results)
+
+
+def test_get_unenrolled_exhibitors_filters_by_name(test_db):
+    from services.show_participants_service import get_unenrolled_exhibitors
+    _seed(test_db)
+    results = get_unenrolled_exhibitors("Cupido")
+    assert len(results) == 1
+    assert results[0].name == "Cupido, C."
+
+
+def test_get_unenrolled_exhibitors_empty_when_all_enrolled(test_db):
+    from services.show_participants_service import get_unenrolled_exhibitors
+    Exhibitor.create(exh_no=1, name="Only One")
+    assert get_unenrolled_exhibitors() == []
+
+
+def test_enrol_exhibitors_assigns_sequential_exh_nos_alphabetically(test_db):
+    from services.show_participants_service import enrol_exhibitors
+    z = Exhibitor.create(exh_no=None, name="Zulu, Z.")
+    a = Exhibitor.create(exh_no=None, name="Adams, A.")
+    m = Exhibitor.create(exh_no=None, name="Meyer, M.")
+    count = enrol_exhibitors([z.id, a.id, m.id])
+    assert count == 3
+    assert Exhibitor.get_by_id(a.id).exh_no == 1
+    assert Exhibitor.get_by_id(m.id).exh_no == 2
+    assert Exhibitor.get_by_id(z.id).exh_no == 3
+
+
+def test_enrol_exhibitors_starts_after_existing_exh_nos(test_db):
+    from services.show_participants_service import enrol_exhibitors
+    Exhibitor.create(exh_no=5, name="Existing")
+    new = Exhibitor.create(exh_no=None, name="New Person")
+    enrol_exhibitors([new.id])
+    assert Exhibitor.get_by_id(new.id).exh_no == 6
+
+
+def test_enrol_exhibitors_empty_list_returns_zero(test_db):
+    from services.show_participants_service import enrol_exhibitors
+    assert enrol_exhibitors([]) == 0

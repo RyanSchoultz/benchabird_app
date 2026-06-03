@@ -102,6 +102,36 @@ def assign_exh_no(exhibitor_id: int, exh_no: int) -> None:
     exhibitor.save()
 
 
+def get_unenrolled_exhibitors(query: str = "") -> list[Exhibitor]:
+    """All exhibitors with no ExhNo assigned, optionally filtered by name."""
+    q = (query or "").strip()
+    base = Exhibitor.select().where(Exhibitor.exh_no.is_null(True))
+    if q:
+        base = base.where(Exhibitor.name.contains(q))
+    return list(base.order_by(Exhibitor.name))
+
+
+def enrol_exhibitors(exhibitor_ids: list[int]) -> int:
+    """
+    Assign sequential ExhNos to the given exhibitors in alphabetical name order.
+    Starts from next_available_exh_no(). Returns count enrolled.
+    """
+    if not exhibitor_ids:
+        return 0
+    exhibitors = list(
+        Exhibitor.select()
+        .where(Exhibitor.id.in_(exhibitor_ids))
+        .order_by(Exhibitor.name)
+    )
+    start = next_available_exh_no()
+    db = Exhibitor._meta.database
+    with db.atomic():
+        for i, exhibitor in enumerate(exhibitors):
+            exhibitor.exh_no = start + i
+            exhibitor.save()
+    return len(exhibitors)
+
+
 def get_participant_entries(exh_no: int) -> list[ParticipantEntryRow]:
     from models.class_glossary import ClassGlossary
     from services.checkin_service import _blocked_reason
