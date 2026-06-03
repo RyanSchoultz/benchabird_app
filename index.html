@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Benchabird Show Manager: free, offline-first Windows desktop app for cage-bird show organisers. QR-powered results entry, 10 PDF reports, no account needed.">
+  <meta name="description" content="Benchabird Show Manager: free, offline-first Windows desktop app for cage-bird show organisers. Check in and bench birds, print judging sheets, capture results, and publish reports.">
   <title>Benchabird Show Manager</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.511.0/dist/umd/lucide.min.js" defer></script>
@@ -40,8 +40,8 @@
     <i data-lucide="feather" width="13" height="13"></i>
     Free &amp; Open Source &nbsp;&middot;&nbsp; Windows Desktop
   </div>
-  <h1>Show management<br><span>done right.</span></h1>
-  <p>Benchabird replaces your legacy Access database with a fast, offline-first desktop app built for cage-bird show organisers &mdash; no account, no internet, no installation required.</p>
+  <h1>Run show day<br><span>from benching to results.</span></h1>
+  <p>Benchabird replaces legacy Access workflows with a fast, offline-first Windows app for check-in, judging sheets, result capture, and printable reports.</p>
   <div class="hero-ctas">
     <a href="https://github.com/RyanSchoultz/benchabird_app/releases/latest/download/benchabird.exe"
        class="btn-primary" target="_blank" rel="noopener">
@@ -58,7 +58,7 @@
     <span><i data-lucide="monitor" width="12" height="12"></i> Windows 10 / 11 &middot; 64-bit</span>
     <span><i data-lucide="package" width="12" height="12"></i> No installation needed</span>
     <span><i data-lucide="wifi-off" width="12" height="12"></i> Works offline</span>
-    <span><i data-lucide="qr-code" width="12" height="12"></i> QR results scanning</span>
+    <span><i data-lucide="clipboard-check" width="12" height="12"></i> Judging capture</span>
   </div>
 </section>
 </div><!-- /.hero-bg -->
@@ -87,37 +87,37 @@
 <section class="section" id="features">
   <div class="section-label">What's inside</div>
   <h2 class="section-title">Everything a show needs</h2>
-  <p class="section-sub">From first entry to final report &mdash; no spreadsheets, no Access, no internet required.</p>
+  <p class="section-sub">From check-in to final report &mdash; no spreadsheets, no Access, no internet required.</p>
   <div class="features-grid">
     <div class="feature-card">
-      <div class="feature-icon"><i data-lucide="ticket" width="20" height="20"></i></div>
-      <h4>Cage Tickets</h4>
-      <p>Print PDF cage tickets with exhibit number, class, exhibitor name, and a QR code that feeds directly into results entry.</p>
+      <div class="feature-icon"><i data-lucide="users" width="20" height="20"></i></div>
+      <h4>Show Participants</h4>
+      <p>Search by name, email, number, or class, then bench arrived birds and allocate exhibit numbers as they arrive.</p>
     </div>
     <div class="feature-card">
-      <div class="feature-icon"><i data-lucide="scan-line" width="20" height="20"></i></div>
-      <h4>QR Results Scanning</h4>
-      <p>Enter results by typing, USB barcode scanner, desktop webcam, or a phone companion on the local network &mdash; your choice.</p>
+      <div class="feature-icon"><i data-lucide="clipboard-list" width="20" height="20"></i></div>
+      <h4>Judges Catalogue</h4>
+      <p>Print Access-style judging sheets grouped by category and class for handwritten placings and not-benched marks.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i data-lucide="clipboard-check" width="20" height="20"></i></div>
+      <h4>Show Day Capture</h4>
+      <p>Capture completed judge pages with radio-button placings, NB marks, and class reallocations before saving each category.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i data-lucide="shield-check" width="20" height="20"></i></div>
+      <h4>Validation &amp; Publish</h4>
+      <p>Review missing results, duplicate placings, and special-winner issues before generating final outputs.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon"><i data-lucide="file-text" width="20" height="20"></i></div>
-      <h4>10 PDF Reports</h4>
-      <p>Results sheet, show catalogue, prize money, address tags, entry confirmations, results by exhibitor &mdash; all with in-app preview.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon"><i data-lucide="users" width="20" height="20"></i></div>
-      <h4>Exhibitor Management</h4>
-      <p>Full CRUD with CSV/Excel import, per-class entry limits, judge assignment, and address label flagging.</p>
+      <h4>PDF Reports</h4>
+      <p>Preview, print, and save catalogue, marked catalogue, results, specials, prize money, tickets, and exhibitor reports.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon"><i data-lucide="archive" width="20" height="20"></i></div>
       <h4>Archives</h4>
-      <p>Save named snapshots of the entire database. Restore any previous show &mdash; perfect before a season reset.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon"><i data-lucide="trophy" width="20" height="20"></i></div>
-      <h4>Special Winners</h4>
-      <p>Assign special prizes by exhibit number. Manage the full prize list with trophy types and cash amounts.</p>
+      <p>Save named database snapshots before resets or major show-day changes, then restore previous shows when needed.</p>
     </div>
   </div>
 </section>
@@ -132,14 +132,14 @@
       <figure class="gallery-figure" onclick="openLightbox('git_assets/image02.png', 'PDF Reports')">
         <img
           src="git_assets/image02.png"
-          alt="Benchabird Reports view &mdash; ten one-click PDF report buttons including Results Sheet, Show Catalogue, and Prize Money"
+          alt="Benchabird Reports view with printable catalogue, judges catalogue, marked catalogue, results, specials, and exhibitor outputs"
           class="gallery-img"
           width="991"
           height="775"
         >
         <figcaption>
           PDF Reports
-          <div class="caption-sub">Ten ready-to-print reports, one click each</div>
+          <div class="caption-sub">Printable show outputs, including judging sheets</div>
         </figcaption>
       </figure>
       <figure class="gallery-figure" onclick="openLightbox('git_assets/image03.png', 'SQL Editor')">
@@ -152,7 +152,7 @@
         >
         <figcaption>
           SQL Editor
-          <div class="caption-sub">Direct database access for power users</div>
+          <div class="caption-sub">Advanced database access for trusted power users</div>
         </figcaption>
       </figure>
       <figure class="gallery-figure" onclick="openLightbox('git_assets/image04.png', 'Help &amp; How-To Guide')">
@@ -165,7 +165,7 @@
         >
         <figcaption>
           Help Guide
-          <div class="caption-sub">Built-in how-to covering every feature</div>
+          <div class="caption-sub">Built-in how-to for setup, benching, capture, and reports</div>
         </figcaption>
       </figure>
     </div>
@@ -175,23 +175,23 @@
 <!-- HOW IT WORKS -->
 <section class="section">
   <div class="section-label">Workflow</div>
-  <h2 class="section-title">From setup to prize ceremony</h2>
-  <p class="section-sub">A typical show runs in a few clear steps &mdash; Benchabird guides you through each one.</p>
+  <h2 class="section-title">From benching to prize ceremony</h2>
+  <p class="section-sub">On show day, Benchabird keeps the paper workflow familiar while making capture and publishing faster.</p>
   <div class="workflow-steps">
     <div class="step">
       <div class="step-number">1</div>
-      <h4>Setup &amp; Exhibitors</h4>
-      <p>Enter show details, upload your club logo, and add all registered exhibitors. Import from CSV or Excel.</p>
+      <h4>Check in &amp; bench</h4>
+      <p>Search arriving exhibitors, bench present birds, allocate exhibit numbers, and add late entries where needed.</p>
     </div>
     <div class="step">
       <div class="step-number">2</div>
-      <h4>Entries &amp; Tickets</h4>
-      <p>Add class entries, run Calculate to assign ticket numbers, then print cage tickets as PDF with QR codes.</p>
+      <h4>Print judging sheets</h4>
+      <p>Generate the Judges Catalogue for judges to complete by hand, grouped by category, main class, and class.</p>
     </div>
     <div class="step">
       <div class="step-number">3</div>
-      <h4>Results &amp; Reports</h4>
-      <p>Scan ticket QRs or type exhibit numbers, choose placings, assign special winners, then generate all PDF reports.</p>
+      <h4>Capture &amp; publish</h4>
+      <p>Enter placings and NB marks, assign special winners, validate issues, then print final results and catalogues.</p>
     </div>
   </div>
 </section>
