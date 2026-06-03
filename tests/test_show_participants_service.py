@@ -12,11 +12,25 @@ def _seed(test_db):
     LateEntry.create(auto_num=1, exh_no=2, name="Botha, B.", class_code="SC03")
 
 
-def test_get_participants_returns_only_exhibitors_with_entries(test_db):
+def test_get_participants_returns_exhibitors_with_exh_no(test_db):
     from services.show_participants_service import get_participants
     _seed(test_db)
+    # exh_no=1 has entries, exh_no=2 has entries. Cupido (exh_no=None) must NOT appear.
     rows = get_participants()
-    assert [r.exh_no for r in rows] == [1, 2]
+    exh_nos = [r.exh_no for r in rows]
+    assert 1 in exh_nos
+    assert 2 in exh_nos
+    assert None not in exh_nos
+
+
+def test_get_participants_includes_exhibitor_with_no_entries(test_db):
+    from services.show_participants_service import get_participants
+    Exhibitor.create(id=10, exh_no=5, name="Zero Entry Person")
+    rows = get_participants()
+    assert any(r.exh_no == 5 for r in rows)
+    zero = next(r for r in rows if r.exh_no == 5)
+    assert zero.entry_count == 0
+    assert zero.benched_count == 0
 
 
 def test_get_participants_counts_entries_and_late(test_db):

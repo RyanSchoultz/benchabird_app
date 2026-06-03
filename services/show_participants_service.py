@@ -47,10 +47,6 @@ def get_participants(filter: str = "all") -> list[ParticipantRow]:
             (SELECT COUNT(*) FROM late_entry WHERE exh_no = e.exh_no) AS late_count
         FROM exhibitor e
         WHERE e.exh_no IS NOT NULL
-          AND (
-            EXISTS (SELECT 1 FROM show_entry WHERE exh_no = e.exh_no)
-            OR EXISTS (SELECT 1 FROM late_entry WHERE exh_no = e.exh_no)
-          )
         ORDER BY e.exh_no
     """)
     rows = [
