@@ -10,14 +10,15 @@ def _load_class_codes() -> list:
 
 
 class EntryDialog(ctk.CTkToplevel):
-    """Add a single show entry."""
-    def __init__(self, parent):
+    """Add a single show entry. Pass exh_no to pre-fill and lock the exhibitor field."""
+    def __init__(self, parent, exh_no: int | None = None):
         super().__init__(parent)
         self.title("Add Show Entry")
         self.geometry("360x240")
         self.resizable(False, False)
         self.grab_set()
         self.after(50, self.lift)
+        self._preset_exh_no = exh_no
         self._class_codes = _load_class_codes()
         self._build()
 
@@ -32,6 +33,9 @@ class EntryDialog(ctk.CTkToplevel):
             row=0, column=0, sticky="e", padx=(0, 8), pady=6
         )
         self._exh_entry = ctk.CTkEntry(form, placeholder_text="e.g. 42")
+        if self._preset_exh_no is not None:
+            self._exh_entry.insert(0, str(self._preset_exh_no))
+            self._exh_entry.configure(state="disabled")
         self._exh_entry.grid(row=0, column=1, sticky="ew", pady=6)
         self._exh_entry.bind("<Return>", lambda e: self._class_combo.focus())
         self._exh_entry.bind("<Tab>", lambda e: (self._class_combo.focus(), "break"))

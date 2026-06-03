@@ -4,14 +4,16 @@ from services.late_entry_service import add_late_entry, LateEntryValidationError
 
 
 class LateEntryDialog(ctk.CTkToplevel):
-    """Add a single late entry."""
-    def __init__(self, parent):
+    """Add a single late entry. Pass exh_no and name to pre-fill and lock those fields."""
+    def __init__(self, parent, exh_no: int | None = None, name: str | None = None):
         super().__init__(parent)
         self.title("Add Late Entry")
         self.geometry("340x240")
         self.resizable(False, False)
         self.grab_set()
         self.after(50, self.lift)
+        self._preset_exh_no = exh_no
+        self._preset_name = name
         self._build()
 
     def _build(self):
@@ -22,15 +24,23 @@ class LateEntryDialog(ctk.CTkToplevel):
         form.grid_columnconfigure(1, weight=1)
 
         fields = [
-            ("Exhibitor #:", "_exh_entry", "e.g. 42"),
-            ("Name:",        "_name_entry", "e.g. Smith, J."),
+            ("Exhibitor #:", "_exh_entry",  "e.g. 42"),
+            ("Name:",        "_name_entry",  "e.g. Smith, J."),
             ("Class Code:",  "_class_entry", "e.g. SC01"),
         ]
+        presets = {
+            "_exh_entry":  str(self._preset_exh_no) if self._preset_exh_no is not None else None,
+            "_name_entry": self._preset_name,
+        }
         for row_i, (label, attr, ph) in enumerate(fields):
             ctk.CTkLabel(form, text=label, anchor="e").grid(
                 row=row_i, column=0, sticky="e", padx=(0, 8), pady=6
             )
             entry = ctk.CTkEntry(form, placeholder_text=ph)
+            preset = presets.get(attr)
+            if preset:
+                entry.insert(0, preset)
+                entry.configure(state="disabled")
             entry.grid(row=row_i, column=1, sticky="ew", pady=6)
             setattr(self, attr, entry)
 
