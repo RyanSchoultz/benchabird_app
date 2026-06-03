@@ -1,6 +1,10 @@
 # views/help_view.py
 """In-app how-to guide — tabbed reference for all major workflows."""
+import sys
+import threading
 import webbrowser
+from tkinter import messagebox
+
 import customtkinter as ctk
 
 _KOFI_URL = "https://ko-fi.com/schoultzie"
@@ -21,20 +25,19 @@ SECTIONS = {
         ("Sidebar Navigation", (
             "Use the left sidebar to move between sections.\n\n"
             "Main section:\n"
-            "  Dashboard       — live show progress overview\n"
-            "  Search          — global search across all data (Ctrl+F)\n"
-            "  Show Setup      — show name, date, club, logo\n"
-            "  Exhibitors      — browse and manage exhibitors (Ctrl+X)\n"
-            "  Entries         — show entries and calculated entries (Ctrl+E)\n"
-            "  Late Entries    — post-deadline entries\n"
-            "  Results         — enter and review judging results (Ctrl+R)\n"
-            "  Special Winners — assign special prize winners\n"
-            "  Special Prizes  — manage the prize list\n"
-            "  Tickets         — print cage tickets (Ctrl+T)\n"
-            "  Reports         — generate PDF reports\n"
-            "  Hall of Fame    — historical records (read-only)\n"
-            "  Notes           — brochure text per bird type\n"
-            "  Help            — this guide (Ctrl+H)\n\n"
+            "  Dashboard          — live show progress overview\n"
+            "  Search             — global search across all data (Ctrl+F)\n"
+            "  Show Setup         — show name, date, club, logo, ticket barcode type\n"
+            "  Exhibitors         — browse and manage the master exhibitor registry (Ctrl+X)\n"
+            "  Show Participants  — entries, benching, and late entries in one view (Ctrl+B / Ctrl+E)\n"
+            "  Results            — enter and review judging results (Ctrl+R)\n"
+            "  Special Winners    — assign special prize winners\n"
+            "  Special Prizes     — manage the prize list\n"
+            "  Tickets            — print cage tickets (Ctrl+T)\n"
+            "  Reports            — generate PDF reports\n"
+            "  Hall of Fame       — historical records (read-only)\n"
+            "  Class Glossary     — searchable class definitions and descriptions\n"
+            "  Help               — this guide (Ctrl+H)\n\n"
             "Admin section (below the divider):\n"
             "  Import Data  — re-import from Access MDB\n"
             "  Reset Data   — clear all show-year data\n"
@@ -44,21 +47,24 @@ SECTIONS = {
         ("Recommended Show Workflow", (
             "Follow these steps in order for a typical show:\n\n"
             "1. Show Setup — enter show name, date, club details, upload logo\n"
-            "2. Exhibitors — add all registered exhibitors\n"
-            "3. Entries — add each exhibitor's class entries\n"
-            "4. Calculate — assigns sequential ticket numbers (button in Entries view)\n"
+            "2. Exhibitors — add all registered exhibitors (or import from CSV/Excel)\n"
+            "3. Show Participants — add each exhibitor's class entries before the show\n"
+            "4. Show Participants — on show day, bench arrived birds to allocate exhibit numbers\n"
+            "   Late entries and corrections are handled in the same view\n"
             "5. Tickets — print cage tickets for exhibitors to attach to cages\n"
-            "6. Results — enter judging results during or after the show\n"
-            "7. Special Winners — assign special prize winners by exhibit number\n"
-            "8. Reports — generate Results Sheet, Catalogue, Prize Money, etc.\n"
-            "9. Archive (optional) — save a snapshot before resetting for next season\n\n"
-            "You do not need to follow this order strictly — entries and exhibitors can "
-            "be added at any time, and you can re-run Calculate as many times as needed."
+            "6. Reports — print the Judges Catalogue for judges to complete by hand\n"
+            "7. Results — use Judging Capture to enter completed sheets by category\n"
+            "8. Special Winners — assign special prize winners by exhibit number\n"
+            "9. Reports — generate Results Sheet, Show Catalogue, Prize Money, etc.\n"
+            "10. Archive (optional) — save a snapshot before resetting for next season\n\n"
+            "Entries and exhibitors can be added at any time. Show Participants handles "
+            "pre-show entries, show-day benching, and late entries all in one place."
         )),
         ("Keyboard Shortcuts", (
             "Global navigation shortcuts:\n\n"
             "  Ctrl+F   — Search\n"
-            "  Ctrl+E   — Entries\n"
+            "  Ctrl+B   — Show Participants\n"
+            "  Ctrl+E   — Show Participants\n"
             "  Ctrl+R   — Results\n"
             "  Ctrl+T   — Tickets\n"
             "  Ctrl+X   — Exhibitors\n"
@@ -74,6 +80,14 @@ SECTIONS = {
             "    Ctrl+Enter  — run the current query\n\n"
             "  Most dialogs\n"
             "    Escape  — close without saving"
+        )),
+        ("Updates", (
+            "Click Check for Updates at the bottom of this Help view to check the "
+            "latest GitHub release.\n\n"
+            "In the packaged exe, Benchabird prompts before downloading, closes, "
+            "replaces the exe through a helper script, restarts, and then shows the "
+            "release changelog. When running from source, update checks can report "
+            "availability but will not replace python.exe."
         )),
     ],
 
@@ -135,54 +149,61 @@ SECTIONS = {
         )),
     ],
 
-    "Entries": [
-        ("Adding an Entry", (
-            "1. Click + Add Entry in the toolbar\n"
-            "2. Enter the exhibitor number (must match an existing exhibitor)\n"
-            "3. Select or type the class code — the dropdown lists all available classes\n"
-            "4. If a duplicate is detected (that exhibitor already has an entry for that "
-            "class), an orange warning appears — you can still save if intentional\n"
-            "5. Press Enter on the class combo or click Save\n\n"
-            "Press Escape to close without saving."
+    "Show Participants": [
+        ("Left Panel — Participant List", (
+            "The left panel lists all exhibitors who have at least one entry in the current show.\n\n"
+            "Filter chips:\n"
+            "  All        — all participants\n"
+            "  Unbenched  — participants with at least one bird not yet benched\n"
+            "  Late       — participants with at least one late entry\n\n"
+            "Search box searches name, exhibitor number, email, and class code.\n"
+            "Typing a name that is in the Exhibitors registry but not yet in the show "
+            "surfaces them under 'Registry (not in this show)' — click to add them. "
+            "If they have no exhibitor number, an inline prompt assigns the next available one.\n\n"
+            "A warning banner appears at the top of the panel if any entry has an "
+            "exhibitor number with no matching Exhibitor record."
         )),
-        ("Bulk Editing", (
-            "Click Bulk Edit… to open the bulk operations dialog. It has four tabs:\n\n"
-            "Bulk Add\n"
-            "  Enter an exhibitor number, then paste class codes into the text area "
-            "(one code per line). Click Add All to create entries for each code. "
-            "Duplicates are skipped and reported in the status message.\n\n"
-            "Rename Class\n"
-            "  Enter the current class code and the new code. Click Rename to update "
-            "every entry in the database that uses the old code.\n\n"
-            "Delete Exhibitor\n"
-            "  Enter an exhibitor number and click Preview Count to see how many entries "
-            "will be removed. Click Delete All to permanently remove them (confirmation required).\n\n"
-            "Reassign Exhibitor\n"
-            "  Enter a From exhibitor number and a To exhibitor number. All entries for "
-            "the From number are updated to the To number (confirmation required)."
+        ("Adding and Managing Entries", (
+            "Select an exhibitor from the left panel to open their entry list on the right.\n\n"
+            "Add Entry:\n"
+            "1. Click + Add Entry\n"
+            "2. The exhibitor number is pre-filled and locked\n"
+            "3. Select or type the class code\n"
+            "4. An orange warning appears for duplicates\n"
+            "5. Press Enter or click Save\n\n"
+            "Add Late Entry:\n"
+            "1. Click + Add Late Entry\n"
+            "2. Exhibitor number and name are pre-filled\n"
+            "3. Enter the class code and click Save\n\n"
+            "Late entries appear in the same list as regular entries with a LATE badge. "
+            "They are tracked separately in the database for reporting purposes.\n\n"
+            "Per-class limits apply to both regular and late entries."
         )),
-        ("Calculate (Run 0010)", (
-            "Calculate assigns sequential ticket numbers to all raw entries. "
-            "This is required before printing tickets or recording results.\n\n"
-            "Click Run Calculate (0010) in the toolbar.\n\n"
-            "What it does:\n"
-            "  • Processes all entries in the ShowEntry table\n"
-            "  • Assigns a unique ticket number to each entry\n"
-            "  • Resolves exhibitor names from the Exhibitor table\n"
-            "  • Populates the CalculatedEntry table\n\n"
-            "Re-run Calculate after adding, removing, or changing entries. "
-            "Existing results are not affected by re-running."
+        ("Benching Arrivals", (
+            "Use Show Participants on show day when exhibitors arrive with their birds.\n\n"
+            "1. Search by name, email, or exhibitor number in the left panel\n"
+            "2. Select the exhibitor\n"
+            "3. Click Select Unbenched to tick all birds not yet benched, or tick individually\n"
+            "4. Click Bench Selected\n\n"
+            "Birds are allocated exhibit numbers in class-sequence order. "
+            "Already-benched birds show their exhibit number, for example Benched #42. "
+            "Late entries are benched the same way — they show LATE · Benched #N when done."
         )),
-        ("Viewing Entries", (
-            "Use the segmented button in the toolbar to switch views:\n\n"
-            "Show Entries — the raw entries as entered, showing AutoNum, ExhNo, and Class. "
-            "These are the source records before any processing.\n\n"
-            "Calculated — entries after Calculate, showing ticket number (#), exhibitor "
-            "number, exhibitor name, and class code. This is the basis for tickets, "
-            "results, and reports.\n\n"
-            "Both views have a filter bar below the toolbar. Type to filter live by "
-            "exhibitor number, class code, or name.\n\n"
-            "The Export button saves the current view (filtered or not) to CSV or Excel."
+        ("Unbenching", (
+            "Tick the birds you want to remove and click Unbench Selected.\n\n"
+            "Unbenching is blocked once an exhibit has a result, an NB mark, or a special winner reference. "
+            "The status badge shows the reason and the checkbox is disabled for those birds."
+        )),
+        ("Auto-Calculate", (
+            "Exhibit numbers are kept current automatically.\n\n"
+            "Before show day (no birds individually benched yet), numbers recalculate "
+            "silently whenever you add or remove an entry — no manual step needed.\n\n"
+            "Once show-day benching starts, recalculating would renumber birds that "
+            "already have printed tickets. Instead, a notice appears:\n"
+            "  'Entries changed — bench numbers may be stale'\n\n"
+            "Click Recalculate in that notice and confirm to reassign numbers for "
+            "unbenched entries. Benched birds keep their existing numbers.\n\n"
+            "Once results are recorded, recalculate is blocked entirely."
         )),
     ],
 
@@ -200,15 +221,17 @@ SECTIONS = {
             "This flow lets you enter results without touching the mouse. "
             "If an exhibit already has a result, it is updated with the new value."
         )),
-        ("Judge Mode", (
-            "Judge Mode is for a steward or operator entering results while a judge works through birds.\n\n"
-            "1. Open Results and click Judge Mode\n"
-            "2. Optionally enter a class filter\n"
-            "3. Scan a ticket QR or type an exhibit number\n"
-            "4. Check the resolved exhibit context\n"
-            "5. Click the placing or Not Benched\n\n"
-            "Judge Mode keeps recent saves visible and returns focus to the scan field after each action. "
-            "Normal Results remains available for review, filtering, export, and Clear All Results."
+        ("Judging Capture", (
+            "Judging Capture is for entering completed paper Judges Catalogue sheets after judging.\n\n"
+            "1. Go to Reports and print the Judges Catalogue\n"
+            "2. Give the sheets to the judges to complete by hand\n"
+            "3. Open Results and click Judging Capture\n"
+            "4. Select the category from the dropdown\n"
+            "5. If needed, change the exhibit's class before saving\n"
+            "6. For each exhibit, choose a placing, NB, or Clear using the radio buttons\n"
+            "7. Click Save Category Results at the end of the category/page\n\n"
+            "Only changed rows are saved. Rapid Entry remains available for corrections, "
+            "scanner entry, and one-off result changes."
         )),
         ("Not Benched", (
             "If a bird was not brought to the show:\n"
@@ -263,7 +286,7 @@ SECTIONS = {
 
     "Tickets & Reports": [
         ("Printing Cage Tickets", (
-            "Before printing, run Calculate in the Entries view to assign ticket numbers.\n\n"
+            "Before printing, use Check-in to bench arrived birds and allocate exhibit numbers.\n\n"
             "1. Navigate to Tickets\n"
             "2. The table shows all assigned tickets with exhibitor details\n"
             "3. Use the filter bar to check specific exhibitors\n"
@@ -280,8 +303,12 @@ SECTIONS = {
         )),
         ("Generating PDF Reports", (
             "Click any report button in the Reports view to generate it:\n\n"
-            "  Entries Received  — all calculated entries in ticket number order\n"
+            "  Entries Received  — all benched entries in exhibit-number order\n"
             "  Show Catalogue    — entries grouped by class with section headers\n"
+            "  4.1 Judges Catalogue  - printable judging sheet with placing and NB boxes\n"
+            "  4.2 Special Lists     - special prize list for catalogue printing\n"
+            "  4.3 Catalogue         - Access-style show catalogue\n"
+            "  4.4 Marked Catalogue  - catalogue with result/NB/special markings\n"
             "  Results Sheet     — all results; not-benched rows shown in red\n"
             "  Special Winners   — all special prizes and their assigned winners\n"
             "  Prize Money       — cash prizes with per-exhibitor subtotals\n"
@@ -301,7 +328,7 @@ SECTIONS = {
             "3. Search by exhibitor name, exhibitor number, exhibit number, email, or club\n"
             "4. Select the exhibitor and choose the bundle sections\n"
             "5. Preview, print, or save the generated PDF\n\n"
-            "Bundles can include exhibitor details, entries, cage tickets after Calculate, late entries, "
+            "Bundles can include exhibitor details, entries, cage tickets after Check-in, late entries, "
             "results when recorded, and an address label when the exhibitor is flagged for labels. "
             "If an exhibitor number is not assigned, the bundle still uses the selected exhibitor row and "
             "matches calculated or late entries by exhibitor name."
@@ -400,13 +427,21 @@ SECTIONS = {
             "The MDB file path is configured in config.py and cannot be changed "
             "from within the app."
         )),
-        ("Brochure Notes", (
-            "The Notes view stores brochure text for each bird type abbreviation.\n\n"
-            "1. Click a type abbreviation in the left panel to load its notes\n"
-            "2. Edit the text in the right panel\n"
-            "3. Click Save Notes\n\n"
-            "Notes are imported from the MDB but can be freely edited here. "
-            "They appear in the Show Catalogue PDF report."
+        ("Class Glossary", (
+            "The Class Glossary is a read-only lookup of class definitions imported "
+            "from the legacy Access Classes_T data. It is seeded into a fast lookup "
+            "table on launch and after legacy import.\n\n"
+            "Use the species dropdown as a group filter, then use the filter box "
+            "to search class codes, bird type, main class, "
+            "description text, Afrikaans description text, or extra TYPEB text.\n\n"
+
+            "For large imported class lists, the view shows the first 250 matches "
+            "to keep the app responsive. Type part of a class, type, or description "
+            "to narrow the list.\n\n"
+
+            "The displayed description follows the Judges Catalogue/report pattern: "
+            "colour plus AFRBESK when both are available. Edit class definitions "
+            "through import data or the SQL Editor."
         )),
         ("Hall of Fame", (
             "The Hall of Fame view shows historical champion records imported "
@@ -448,14 +483,16 @@ SECTIONS = {
         ("Key Tables", (
             "show_details       — show name, date, club, logo bytes\n"
             "exhibitor          — all exhibitors\n"
-            "show_entry         — raw entries before Calculate\n"
-            "calculated_entry   — entries after Calculate (with ticket numbers)\n"
+            "show_entry         — raw pre-show entries before Check-in\n"
+            "calculated_entry   — benched birds with allocated exhibit numbers\n"
             "late_entry         — late entries\n"
             "result             — judging results\n"
             "not_benched        — exhibit numbers marked Not Benched\n"
             "special_list       — special prize definitions\n"
             "special_winner     — special prize winner assignments\n"
             "class_def          — class code definitions\n"
+            "species            - imported species/category reference rows\n"
+            "class_glossary     - seeded searchable glossary rows\n"
             "hall_of_fame       — historical champion records\n"
             "notes_brochure     — brochure text per bird type\n\n"
             "Run SELECT name FROM sqlite_master WHERE type='table' ORDER BY name; "
@@ -505,6 +542,21 @@ class HelpView(ctk.CTkFrame):
             font=ctk.CTkFont(size=11, weight="bold"),
             command=lambda: webbrowser.open(_KOFI_URL),
         ).grid(row=0, column=1, sticky="e")
+        self._update_status = ctk.CTkLabel(
+            support,
+            text="",
+            font=ctk.CTkFont(size=11),
+            text_color=("gray40", "gray60"),
+        )
+        self._update_status.grid(row=1, column=0, sticky="w", pady=(6, 0))
+        ctk.CTkButton(
+            support,
+            text="Check for Updates",
+            width=140,
+            height=28,
+            font=ctk.CTkFont(size=11, weight="bold"),
+            command=self._check_for_updates,
+        ).grid(row=1, column=1, sticky="e", pady=(6, 0))
 
         for section_name, topics in SECTIONS.items():
             tab = tabs.add(section_name)
@@ -531,3 +583,57 @@ class HelpView(ctk.CTkFrame):
                     justify="left",
                     wraplength=700,
                 ).grid(row=row_i * 2 + 1, column=0, sticky="w", padx=20, pady=(0, 4))
+
+    def _check_for_updates(self):
+        self._update_status.configure(text="Checking for updates...")
+
+        def run():
+            try:
+                from services.update_service import check_for_update
+
+                info = check_for_update()
+                self.after(0, lambda: self._update_check_done(info))
+            except Exception as exc:
+                self.after(0, lambda: self._update_check_error(str(exc)))
+
+        threading.Thread(target=run, daemon=True).start()
+
+    def _update_check_done(self, info):
+        if info is None:
+            self._update_status.configure(text="Benchabird is up to date.")
+            messagebox.showinfo("Benchabird Updates", "You are already running the latest version.")
+            return
+
+        if not getattr(sys, "frozen", False):
+            self._update_status.configure(text=f"Update {info.version} available; packaged exe required.")
+            messagebox.showinfo(
+                "Benchabird Update Available",
+                f"Version {info.version} is available, but automatic replacement only works in the packaged exe.\n\n{info.changelog}",
+            )
+            return
+
+        should_download = messagebox.askyesno(
+            "Benchabird Update Available",
+            f"Version {info.version} is available.\n\n{info.changelog}\n\nDownload and restart now?",
+        )
+        if not should_download:
+            self._update_status.configure(text="Update cancelled.")
+            return
+
+        self._update_status.configure(text=f"Downloading {info.asset_name}...")
+
+        def run_download():
+            try:
+                from services.update_service import download_update, install_downloaded_update
+
+                downloaded = download_update(info)
+                install_downloaded_update(downloaded, info.changelog)
+                self.after(0, self.winfo_toplevel().destroy)
+            except Exception as exc:
+                self.after(0, lambda: self._update_check_error(str(exc)))
+
+        threading.Thread(target=run_download, daemon=True).start()
+
+    def _update_check_error(self, message: str):
+        self._update_status.configure(text=f"Update check failed: {message[:80]}")
+        messagebox.showerror("Benchabird Updates", message)
