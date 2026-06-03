@@ -1,5 +1,6 @@
 # tests/test_reset_service.py
 import pytest
+from models.exhibitor import Exhibitor
 from models.show_entry import ShowEntry, CalculatedEntry, LateEntry
 from models.results import Result, NotBenched
 from models.special import SpecialWinner
@@ -27,13 +28,26 @@ def test_reset_clears_all_show_data(test_db):
     assert ClassDef.select().count() == 1  # NOT cleared
 
 
+def test_reset_clears_exh_nos_from_exhibitors(test_db):
+    Exhibitor.create(exh_no=1, name="Adams, A.")
+    Exhibitor.create(exh_no=2, name="Botha, B.")
+    Exhibitor.create(exh_no=None, name="Cupido, C.")
+
+    reset_show_data()
+
+    exh_nos = [e.exh_no for e in Exhibitor.select()]
+    assert all(n is None for n in exh_nos)
+
+
 def test_reset_returns_counts(test_db):
-    ShowEntry.create(auto_num=1, exh_no=1, class_code="SC01")
+    Exhibitor.create(exh_no=5, name="Adams, A.")
+    ShowEntry.create(auto_num=1, exh_no=5, class_code="SC01")
     Result.create(exhibit_no=1, result="1st")
     counts = reset_show_data()
     assert counts['entries'] == 1
     assert counts['results'] == 1
-    assert set(counts.keys()) == {'entries', 'calculated', 'late_entries', 'results', 'not_benched', 'special_winners'}
+    assert counts['exh_nos_cleared'] == 1
+    assert set(counts.keys()) == {'entries', 'calculated', 'late_entries', 'results', 'not_benched', 'special_winners', 'exh_nos_cleared'}
 
 
 def test_reset_on_empty_db_is_noop(test_db):
