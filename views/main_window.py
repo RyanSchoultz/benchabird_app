@@ -1,23 +1,23 @@
 # views/main_window.py
 import customtkinter as ctk
 from PIL import Image
+from tkinter import messagebox
 from config import APP_NAME, APP_VERSION, BASE_DIR
 
 NAV = [
-    ("Dashboard",       "dashboard"),
-    ("Search",          "search"),
-    ("Show Setup",      "setup"),
-    ("Exhibitors",      "exhibitors"),
-    ("Entries",         "entries"),
-    ("Late Entries",    "late_entries"),
-    ("Results",         "results"),
-    ("Special Winners", "special"),
-    ("Special Prizes",  "special_list"),
-    ("Tickets",         "tickets"),
-    ("Reports",         "reports"),
-    ("Hall of Fame",    "hall_of_fame"),
-    ("Notes",           "notes"),
-    ("Help",            "help"),
+    ("Dashboard",         "dashboard"),
+    ("Search",            "search"),
+    ("Show Setup",        "setup"),
+    ("Exhibitors",        "exhibitors"),
+    ("Show Participants", "participants"),
+    ("Results",           "results"),
+    ("Special Winners",   "special"),
+    ("Special Prizes",    "special_list"),
+    ("Tickets",           "tickets"),
+    ("Reports",           "reports"),
+    ("Hall of Fame",      "hall_of_fame"),
+    ("Class Glossary",    "notes"),
+    ("Help",              "help"),
 ]
 
 ADMIN_NAV = [
@@ -39,15 +39,17 @@ class MainWindow(ctk.CTk):
         self._set_icon()
         self._build()
         self._bind_shortcuts()
+        self.after(600, self._show_pending_changelog)
 
     def _bind_shortcuts(self):
         for seq, key in [
-            ("<Control-f>", "search"), ("<Control-F>", "search"),
-            ("<Control-h>", "help"),   ("<Control-H>", "help"),
-            ("<Control-e>", "entries"), ("<Control-E>", "entries"),
-            ("<Control-r>", "results"), ("<Control-R>", "results"),
-            ("<Control-t>", "tickets"), ("<Control-T>", "tickets"),
-            ("<Control-x>", "exhibitors"), ("<Control-X>", "exhibitors"),
+            ("<Control-f>", "search"),       ("<Control-F>", "search"),
+            ("<Control-h>", "help"),         ("<Control-H>", "help"),
+            ("<Control-e>", "participants"), ("<Control-E>", "participants"),
+            ("<Control-b>", "participants"), ("<Control-B>", "participants"),
+            ("<Control-r>", "results"),      ("<Control-R>", "results"),
+            ("<Control-t>", "tickets"),      ("<Control-T>", "tickets"),
+            ("<Control-x>", "exhibitors"),   ("<Control-X>", "exhibitors"),
         ]:
             self.bind(seq, lambda e, k=key: self.navigate(k))
 
@@ -83,11 +85,14 @@ class MainWindow(ctk.CTk):
                 font=ctk.CTkFont(size=14, weight="bold"),
             ).pack(padx=14, pady=(20, 12))
 
-        ctk.CTkFrame(self._sidebar, height=1, fg_color=("gray70", "gray35")).pack(fill="x", padx=14, pady=(0, 10))
+        ctk.CTkFrame(self._sidebar, height=1, fg_color=("gray70", "gray35")).pack(fill="x", padx=14, pady=(0, 6))
+
+        nav_scroll = ctk.CTkScrollableFrame(self._sidebar, fg_color="transparent")
+        nav_scroll.pack(fill="both", expand=True, padx=0, pady=(0, 8))
 
         for label, key in NAV:
             btn = ctk.CTkButton(
-                self._sidebar,
+                nav_scroll,
                 text=label,
                 anchor="w",
                 corner_radius=6,
@@ -100,11 +105,11 @@ class MainWindow(ctk.CTk):
             btn.pack(fill="x", padx=8, pady=2)
             self._nav_btns[key] = btn
 
-        ctk.CTkFrame(self._sidebar, height=1, fg_color=("gray70", "gray35")).pack(fill="x", padx=14, pady=(8, 4))
+        ctk.CTkFrame(nav_scroll, height=1, fg_color=("gray70", "gray35")).pack(fill="x", padx=14, pady=(8, 4))
 
         for label, key in ADMIN_NAV:
             btn = ctk.CTkButton(
-                self._sidebar,
+                nav_scroll,
                 text=label,
                 anchor="w",
                 corner_radius=6,
@@ -163,8 +168,7 @@ class MainWindow(ctk.CTk):
         from views.dashboard import DashboardView
         from views.setup_view import SetupView
         from views.exhibitors_view import ExhibitorsView
-        from views.entries_view import EntriesView
-        from views.late_entries_view import LateEntriesView
+        from views.show_participants_view import ShowParticipantsView
         from views.results_view import ResultsView
         from views.special_view import SpecialView
         from views.special_list_view import SpecialListView
@@ -181,24 +185,33 @@ class MainWindow(ctk.CTk):
         from views.welcome_view import WelcomeView
 
         view_map = {
-            "welcome":      WelcomeView,
-            "dashboard":    DashboardView,
-            "search":       SearchView,
-            "setup":        SetupView,
-            "exhibitors":   ExhibitorsView,
-            "entries":      EntriesView,
-            "late_entries": LateEntriesView,
-            "results":      ResultsView,
-            "special":      SpecialView,
-            "special_list": SpecialListView,
-            "tickets":      TicketsView,
-            "reports":      ReportsView,
-            "hall_of_fame": HallOfFameView,
-            "notes":        NotesView,
-            "help":         HelpView,
-            "import":       ReImportView,
-            "reset":        ResetView,
-            "sql_editor":   SQLEditorView,
+            "welcome":       WelcomeView,
+            "dashboard":     DashboardView,
+            "search":        SearchView,
+            "setup":         SetupView,
+            "exhibitors":    ExhibitorsView,
+            "participants":  ShowParticipantsView,
+            "results":       ResultsView,
+            "special":       SpecialView,
+            "special_list":  SpecialListView,
+            "tickets":       TicketsView,
+            "reports":       ReportsView,
+            "hall_of_fame":  HallOfFameView,
+            "notes":         NotesView,
+            "help":          HelpView,
+            "import":        ReImportView,
+            "reset":         ResetView,
+            "sql_editor":    SQLEditorView,
         }
         cls = view_map.get(key)
         return cls(self._content) if cls else None
+
+    def _show_pending_changelog(self):
+        try:
+            from services.update_service import pop_pending_changelog
+
+            changelog = pop_pending_changelog()
+        except Exception:
+            return
+        if changelog:
+            messagebox.showinfo("Benchabird Updated", changelog)
