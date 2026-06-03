@@ -21,6 +21,9 @@ def _migrate_db():
         "ALTER TABLE show_details ADD COLUMN logo_data BLOB",
         "ALTER TABLE class_def ADD COLUMN entry_limit INTEGER",
         "ALTER TABLE class_def ADD COLUMN judge VARCHAR(100)",
+        "ALTER TABLE calculated_entry ADD COLUMN source_entry_auto_num INTEGER",
+        "ALTER TABLE calculated_entry ADD COLUMN source_late_entry_auto_num INTEGER",
+        "ALTER TABLE show_details ADD COLUMN barcode_type VARCHAR(10)",
     ]:
         try:
             database.execute_sql(sql)
@@ -31,6 +34,9 @@ def init_db():
     database.connect(reuse_if_open=True)
     database.create_tables(ALL_MODELS, safe=True)
     _migrate_db()
+    from services.class_glossary_service import seed_class_glossary
+
+    seed_class_glossary()
 
 def main():
     ctk.set_appearance_mode("dark")

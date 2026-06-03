@@ -1,7 +1,10 @@
 # tests/test_models.py
 def test_all_models_count(test_db):
     from models import ALL_MODELS
-    assert len(ALL_MODELS) == 17
+    from models.class_glossary import ClassGlossary
+
+    assert len(ALL_MODELS) == 18
+    assert ClassGlossary in ALL_MODELS
 
 def test_exhibitor_create(test_db):
     from models.exhibitor import Exhibitor
@@ -27,3 +30,9 @@ def test_special_winner_create(test_db):
     from models.special import SpecialWinner
     sw = SpecialWinner.create(special_nr="RF05", exhibit_no=407, result="Special")
     assert SpecialWinner.get(SpecialWinner.special_nr == "RF05").exhibit_no == 407
+
+def test_calculated_entry_has_source_late_entry_auto_num(test_db):
+    from models.show_entry import CalculatedEntry
+    CalculatedEntry.create(auto_num=1, source_late_entry_auto_num=99, exh_no=5, class_code="SC01")
+    row = CalculatedEntry.get(CalculatedEntry.auto_num == 1)
+    assert row.source_late_entry_auto_num == 99
