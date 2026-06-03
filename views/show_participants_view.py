@@ -40,10 +40,17 @@ class ShowParticipantsView(ctk.CTkFrame):
         left.grid_columnconfigure(0, weight=1)
         self._left = left
 
+        header_row = ctk.CTkFrame(left, fg_color="transparent")
+        header_row.grid(row=0, column=0, sticky="ew", padx=12, pady=(12, 4))
+        header_row.grid_columnconfigure(0, weight=1)
         ctk.CTkLabel(
-            left, text="Show Participants",
+            header_row, text="Show Participants",
             font=ctk.CTkFont(size=14, weight="bold"),
-        ).grid(row=0, column=0, sticky="w", padx=12, pady=(12, 4))
+        ).grid(row=0, column=0, sticky="w")
+        ctk.CTkButton(
+            header_row, text="Enrol…", width=70, height=28,
+            command=self._open_enrol_dialog,
+        ).grid(row=0, column=1)
 
         search_frame = ctk.CTkFrame(left, fg_color="transparent")
         search_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 4))
@@ -231,7 +238,14 @@ class ShowParticipantsView(ctk.CTkFrame):
 
     def _add_registry_exhibitor(self, exhibitor):
         if exhibitor.exh_no is None:
-            self._prompt_assign_exh_no(exhibitor)
+            new_no = next_available_exh_no()
+            assign_exh_no(exhibitor.id, new_no)
+            self._refresh_left()
+            updated = next(
+                (p for p in self._participants if p.exh_no == new_no), None
+            )
+            if updated:
+                self._select_participant(updated)
         else:
             self._select_participant(ParticipantRow(
                 exhibitor_id=exhibitor.id,
@@ -241,47 +255,11 @@ class ShowParticipantsView(ctk.CTkFrame):
                 entry_count=0, benched_count=0, late_count=0,
             ))
 
-    def _prompt_assign_exh_no(self, exhibitor):
-        dlg = ctk.CTkToplevel(self)
-        dlg.title("Assign Exhibitor Number")
-        dlg.geometry("340x165")
-        dlg.resizable(False, False)
-        dlg.grab_set()
-        dlg.after(50, dlg.lift)
-
-        ctk.CTkLabel(
-            dlg, text=f"Assign a show number for:\n{exhibitor.name}",
-            font=ctk.CTkFont(size=12),
-        ).pack(padx=20, pady=(16, 8))
-
-        row_frame = ctk.CTkFrame(dlg, fg_color="transparent")
-        row_frame.pack(fill="x", padx=20)
-        ctk.CTkLabel(row_frame, text="ExhNo:").pack(side="left", padx=(0, 8))
-        var = ctk.StringVar(value=str(next_available_exh_no()))
-        entry = ctk.CTkEntry(row_frame, textvariable=var, width=80)
-        entry.pack(side="left")
-
-        msg = ctk.CTkLabel(dlg, text="", font=ctk.CTkFont(size=11),
-                           text_color=("red4", "tomato"))
-        msg.pack(pady=4)
-
-        def _confirm():
-            val = var.get().strip()
-            if not val.isdigit():
-                msg.configure(text="Must be a number.")
-                return
-            try:
-                assign_exh_no(exhibitor.id, int(val))
-            except ValueError as exc:
-                msg.configure(text=str(exc))
-                return
-            dlg.destroy()
-            self._refresh_left()
-            updated = next((p for p in self._participants if p.exh_no == int(val)), None)
-            if updated:
-                self._select_participant(updated)
-
-        ctk.CTkButton(dlg, text="Assign & Open", command=_confirm).pack(pady=(4, 12))
+    def _open_enrol_dialog(self):
+        from views._enrol_dialog import EnrolDialog
+        dlg = EnrolDialog(self)
+        self.wait_window(dlg)
+        self._refresh_left()
 
     # ── Right panel logic ─────────────────────────────────────────────────────
 
