@@ -1,6 +1,6 @@
 # views/_special_dialog.py
 import customtkinter as ctk
-from services.special_service import assign_special_winner
+from services.special_service import assign_special_winner, clear_special_winner
 
 
 class SpecialAssignDialog(ctk.CTkToplevel):
@@ -43,8 +43,12 @@ class SpecialAssignDialog(ctk.CTkToplevel):
 
     def _save(self):
         raw = self._entry.get().strip()
+        if not raw:
+            clear_special_winner(self._special_nr)
+            self.destroy()
+            return
         if not raw.isdigit():
-            self._msg.configure(text="Enter a numeric exhibit number.")
+            self._msg.configure(text="Enter a numeric exhibit number, or clear the field to remove.")
             return
         try:
             assign_special_winner(self._special_nr, int(raw))

@@ -76,7 +76,7 @@ class EnrolDialog(ctk.CTkToplevel):
         self.bind("<Escape>", lambda e: self.destroy())
 
     def _load(self):
-        self._all_exhibitors = get_unenrolled_exhibitors()
+        self._all_exhibitors = get_unenrolled_exhibitors(flagged_only=True)
         self._vars = {e.id: ctk.BooleanVar(value=False) for e in self._all_exhibitors}
         self._apply_filter()
 
@@ -108,7 +108,9 @@ class EnrolDialog(ctk.CTkToplevel):
                 anchor="e",
             ).grid(row=0, column=2, sticky="e", padx=(8, 0))
         total_left = len(self._all_exhibitors)
-        self._count_lbl.configure(text=f"{total_left} unenrolled")
+        self._count_lbl.configure(
+            text=f"{total_left} flagged entrant{'s' if total_left != 1 else ''}"
+        )
         self._update_counts()
 
     def _toggle_all(self):

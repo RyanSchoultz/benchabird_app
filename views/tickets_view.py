@@ -50,7 +50,7 @@ class TicketsView(ctk.CTkFrame):
         self._filter_var.trace_add("write", lambda *_: self._apply_filter())
         ctk.CTkEntry(
             filter_bar, textvariable=self._filter_var,
-            placeholder_text="Filter by ExhNo, name, or class…", width=280,
+            placeholder_text="Filter by ExhNo, class desc, or class…", width=280,
         ).pack(side="left")
         ctk.CTkButton(
             filter_bar, text="✕", width=28, height=28,
@@ -60,7 +60,7 @@ class TicketsView(ctk.CTkFrame):
 
         self._table = PaginatedTable(
             self,
-            headers=["Ticket #", "AutoNum", "ExhNo", "Name", "Class"],
+            headers=["Ticket #", "AutoNum", "ExhNo", "Class Desc", "Class"],
             selectable=False,
         )
         self._table.grid(row=2, column=0, sticky="nsew", padx=16, pady=(0, 16))
@@ -72,7 +72,7 @@ class TicketsView(ctk.CTkFrame):
             self._all_data = [
                 (t['ticket_no'], [
                     str(t['ticket_no']), str(t['auto_num']),
-                    str(t['exh_no'] or ""), t['name'] or "", t['class_code'] or "",
+                    str(t['exh_no'] or ""), t['class_desc'] or "", t['class_code'] or "",
                 ])
                 for t in tickets
             ]
@@ -80,7 +80,7 @@ class TicketsView(ctk.CTkFrame):
         else:
             self._all_data = []
             self._table.load([])
-            self._status.configure(text="Run Calculate first to generate tickets.")
+            self._status.configure(text="Bench birds in Show Participants first to generate tickets.")
 
     def _apply_filter(self):
         q = self._filter_var.get().strip().lower()
@@ -111,13 +111,14 @@ class TicketsView(ctk.CTkFrame):
         sd = ShowDetails.select().first()
         show_name = f"{sd.show_eng} {sd.date_eng}" if sd else "Bird Show"
         logo_data = bytes(sd.logo_data) if sd and getattr(sd, 'logo_data', None) else None
+        barcode_type = getattr(sd, 'barcode_type', None) or "QR" if sd else "QR"
         threading.Thread(
-            target=self._generate, args=(tickets, show_name, logo_data, path), daemon=True
+            target=self._generate, args=(tickets, show_name, logo_data, barcode_type, path), daemon=True
         ).start()
 
-    def _generate(self, tickets: list, show_name: str, logo_data: bytes, path: str):
+    def _generate(self, tickets: list, show_name: str, logo_data: bytes, barcode_type: str, path: str):
         try:
-            pdf_bytes = generate_ticket_pdf(tickets, show_name=show_name, logo_data=logo_data)
+            pdf_bytes = generate_ticket_pdf(tickets, show_name=show_name, logo_data=logo_data, barcode_type=barcode_type)
             with open(path, "wb") as f:
                 f.write(pdf_bytes)
             self.after(0, lambda: self._on_done(path))
@@ -137,4 +138,4 @@ class TicketsView(ctk.CTkFrame):
     def _export(self):
         from services.export_service import export_data
         rows = [list(cells) for _, cells in self._all_data]
-        export_data(rows, ["TicketNo", "AutoNum", "ExhNo", "Name", "Class"], "tickets.csv")
+        export_data(rows, ["TicketNo", "AutoNum", "ExhNo", "ClassDesc", "Class"], "tickets.csv")

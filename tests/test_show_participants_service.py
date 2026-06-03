@@ -214,3 +214,20 @@ def test_enrol_exhibitors_starts_after_existing_exh_nos(test_db):
 def test_enrol_exhibitors_empty_list_returns_zero(test_db):
     from services.show_participants_service import enrol_exhibitors
     assert enrol_exhibitors([]) == 0
+
+
+def test_get_unenrolled_exhibitors_flagged_only_excludes_unflagged(test_db):
+    from services.show_participants_service import get_unenrolled_exhibitors
+    Exhibitor.create(exh_no=None, name="Flagged", is_entrant=True)
+    Exhibitor.create(exh_no=None, name="Unflagged", is_entrant=False)
+    results = get_unenrolled_exhibitors(flagged_only=True)
+    assert len(results) == 1
+    assert results[0].name == "Flagged"
+
+
+def test_get_unenrolled_exhibitors_flagged_only_false_returns_all(test_db):
+    from services.show_participants_service import get_unenrolled_exhibitors
+    Exhibitor.create(exh_no=None, name="Flagged", is_entrant=True)
+    Exhibitor.create(exh_no=None, name="Unflagged", is_entrant=False)
+    results = get_unenrolled_exhibitors(flagged_only=False)
+    assert len(results) == 2

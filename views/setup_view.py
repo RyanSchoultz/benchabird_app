@@ -46,9 +46,25 @@ class SetupView(ctk.CTkFrame):
             row=2, column=0, pady=16, padx=30, sticky="w"
         )
 
+        # ── Ticket barcode type ───────────────────────────────────────
+        barcode_row = ctk.CTkFrame(self, fg_color="transparent")
+        barcode_row.grid(row=3, column=0, sticky="w", padx=30, pady=(0, 12))
+
+        ctk.CTkLabel(barcode_row, text="Ticket Barcode:",
+                     font=ctk.CTkFont(size=12)).pack(side="left", padx=(0, 10))
+
+        self._barcode_var = ctk.StringVar(value="QR")
+        self._barcode_seg = ctk.CTkSegmentedButton(
+            barcode_row,
+            values=["QR Code", "1D Barcode", "None"],
+            variable=self._barcode_var,
+            command=self._save_barcode,
+        )
+        self._barcode_seg.pack(side="left")
+
         # ── Logo row ─────────────────────────────────────────────────
         logo_row = ctk.CTkFrame(self, fg_color="transparent")
-        logo_row.grid(row=3, column=0, sticky="w", padx=30, pady=(0, 8))
+        logo_row.grid(row=4, column=0, sticky="w", padx=30, pady=(0, 8))
 
         ctk.CTkLabel(logo_row, text="Club Logo:",
                      font=ctk.CTkFont(size=12)).pack(side="left", padx=(0, 8))
@@ -70,7 +86,7 @@ class SetupView(ctk.CTkFrame):
         # ── Logo preview canvas ──────────────────────────────────────
         preview_outer = ctk.CTkFrame(self, fg_color=("gray88", "gray20"),
                                      corner_radius=8)
-        preview_outer.grid(row=4, column=0, sticky="w", padx=30, pady=(0, 16))
+        preview_outer.grid(row=5, column=0, sticky="w", padx=30, pady=(0, 16))
 
         self._preview_lbl = ctk.CTkLabel(
             preview_outer, text="No logo set",
@@ -90,6 +106,10 @@ class SetupView(ctk.CTkFrame):
             ent.delete(0, "end")
             if val:
                 ent.insert(0, val)
+        barcode_type = getattr(sd, 'barcode_type', None) or "QR"
+        label_map = {"QR": "QR Code", "1D": "1D Barcode", "None": "None"}
+        self._barcode_var.set(label_map.get(barcode_type, "QR Code"))
+
         logo_data = getattr(sd, 'logo_data', None)
         logo_path = getattr(sd, 'logo_path', None)
         if logo_data:
@@ -146,6 +166,16 @@ class SetupView(ctk.CTkFrame):
             self._preview_lbl.configure(image=self._logo_ctk_img, text="")
         except Exception:
             self._preview_lbl.configure(image=None, text="Preview failed")
+
+    def _save_barcode(self, label: str):
+        value_map = {"QR Code": "QR", "1D Barcode": "1D", "None": "None"}
+        barcode_type = value_map.get(label, "QR")
+        sd = ShowDetails.select().first()
+        if sd:
+            sd.barcode_type = barcode_type
+            sd.save()
+        else:
+            ShowDetails.create(barcode_type=barcode_type)
 
     def _save(self):
         data = {field: (self._entries[field].get().strip() or None) for field, _ in FIELDS}

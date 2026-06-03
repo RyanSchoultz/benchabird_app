@@ -14,6 +14,7 @@ class ShowDetails(BaseModel):
     association = CharField(max_length=50, null=True)
     logo_path = CharField(max_length=500, null=True)
     logo_data = BlobField(null=True)  # raw image bytes stored in DB
+    barcode_type = CharField(max_length=10, null=True)  # "QR", "1D", or "None"
 
     class Meta:
         table_name = 'show_details'

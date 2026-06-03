@@ -65,7 +65,7 @@ class DashboardView(ctk.CTkFrame):
         stats = [
             ("Exhibitors", n_exhibitors, "registered"),
             ("Entries", n_entries, "show entries"),
-            ("Calculated", n_calc, "after calculate"),
+            ("Benched", n_calc, "checked in"),
             ("Results", n_results, f"+ {n_nb} not benched"),
         ]
         for col, (title, value, sub) in enumerate(stats):
@@ -93,19 +93,18 @@ class DashboardView(ctk.CTkFrame):
             left, text="Show Workflow", font=ctk.CTkFont(size=13, weight="bold")
         ).pack(anchor="w", padx=14, pady=(12, 6))
 
-        calc_sync = n_calc == n_entries and n_entries > 0
         results_pct = int(n_results / n_calc * 100) if n_calc > 0 else 0
 
         steps = [
             (n_entries > 0, f"Entries imported ({n_entries})"),
-            (n_calc > 0 and calc_sync, f"Calculate run ({n_calc} entries assigned)"),
-            (not calc_sync and n_calc > 0, f"Calculate out of sync — re-run needed ({n_calc} vs {n_entries})"),
-            (n_results + n_nb > 0, f"Results being entered ({results_pct}% of calculated, {n_nb} not benched)"),
+            (n_calc > 0, f"Birds checked in ({n_calc} benched)"),
+            (n_entries > n_calc, f"Awaiting check-in ({n_entries - n_calc} not benched yet)"),
+            (n_results + n_nb > 0, f"Results being entered ({results_pct}% of benched, {n_nb} not benched)"),
             (n_results + n_nb >= n_calc and n_calc > 0, "All results entered — tickets & reports ready"),
         ]
 
         for done, label in steps:
-            if "out of sync" in label and calc_sync:
+            if "Awaiting check-in" in label and n_entries == n_calc:
                 continue
             icon = "✓" if done else "○"
             color = ("gray25", "gray80") if done else ("gray60", "gray50")
@@ -174,8 +173,8 @@ class DashboardView(ctk.CTkFrame):
         actions_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
 
         quick = [
-            ("Show Entries",    "entries",      "Add or review entries"),
-            ("Enter Results",   "results",      "Record judging results"),
+            ("Check In Birds",  "participants", "Bench arrivals and allocate exhibit #"),
+            ("Show Day Capture", "capture",     "Capture results and awards"),
             ("Special Prizes",  "special_list", "Manage special award prizes"),
             ("Print Reports",   "reports",      "Generate and preview PDFs"),
         ]

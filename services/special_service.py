@@ -12,6 +12,10 @@ def assign_special_winner(special_nr: str, exhibit_no: int):
     return _repo.set_special_winner(special_nr, exhibit_no)
 
 
+def clear_special_winner(special_nr: str) -> None:
+    _repo.clear_special_winner(special_nr)
+
+
 def get_winners_with_details() -> list:
     winners = _repo.get_special_winners()
     out = []

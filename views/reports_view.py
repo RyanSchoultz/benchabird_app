@@ -45,8 +45,13 @@ class ReportsView(ctk.CTkFrame):
         grid.grid(row=3, column=0, padx=16)
 
         reports = [
+            ("Entries Submitted", "benchabird_entries_submitted.pdf", self._gen_entries_submitted),
             ("Entries Received", "benchabird_entries_received.pdf", self._gen_entries_received),
             ("Show Catalogue", "benchabird_show_catalogue.pdf", self._gen_show_catalogue),
+            ("4.1 Judges Catalogue", "benchabird_4_1_judges_catalogue.pdf", self._gen_judges_catalogue),
+            ("4.2 Special Lists", "benchabird_4_2_special_lists.pdf", self._gen_special_lists_catalogue),
+            ("4.3 Catalogue", "benchabird_4_3_catalogue.pdf", self._gen_catalogue_4_3),
+            ("4.4 Marked Catalogue", "benchabird_4_4_marked_catalogue.pdf", self._gen_marked_catalogue),
             ("Results Sheet", "benchabird_results_sheet.pdf", self._gen_results_sheet),
             ("Special Winners", "benchabird_special_winners.pdf", self._gen_special_winners),
             ("Prize Money", "benchabird_prize_money.pdf", self._gen_prize_money),
@@ -104,10 +109,35 @@ class ReportsView(ctk.CTkFrame):
 
         self._save_and_open(generate_entries_received, "benchabird_entries_received.pdf")
 
+    def _gen_entries_submitted(self):
+        from services.reports.entries_submitted import generate_entries_submitted
+
+        self._save_and_open(generate_entries_submitted, "benchabird_entries_submitted.pdf")
+
     def _gen_show_catalogue(self):
         from services.reports.show_catalogue import generate_show_catalogue
 
         self._save_and_open(generate_show_catalogue, "benchabird_show_catalogue.pdf")
+
+    def _gen_judges_catalogue(self):
+        from services.reports.judges_catalogue import generate_judges_catalogue
+
+        self._save_and_open(generate_judges_catalogue, "benchabird_4_1_judges_catalogue.pdf")
+
+    def _gen_special_lists_catalogue(self):
+        from services.reports.special_lists import generate_special_lists
+
+        self._save_and_open(generate_special_lists, "benchabird_4_2_special_lists.pdf")
+
+    def _gen_catalogue_4_3(self):
+        from services.reports.show_catalogue import generate_show_catalogue
+
+        self._save_and_open(generate_show_catalogue, "benchabird_4_3_catalogue.pdf")
+
+    def _gen_marked_catalogue(self):
+        from services.reports.marked_catalogue import generate_marked_catalogue
+
+        self._save_and_open(generate_marked_catalogue, "benchabird_4_4_marked_catalogue.pdf")
 
     def _gen_results_sheet(self):
         from services.reports.results_sheet import generate_results_sheet

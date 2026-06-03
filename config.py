@@ -22,3 +22,4 @@ MDB_CONN_STR = (
 
 APP_NAME = "Benchabird Show Manager"
 APP_VERSION = "1.0.1"
+RELEASE_API_URL = "https://api.github.com/repos/RyanSchoultz/benchabird_app/releases/latest"

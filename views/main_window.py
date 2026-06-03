@@ -10,6 +10,7 @@ NAV = [
     ("Show Setup",        "setup"),
     ("Exhibitors",        "exhibitors"),
     ("Show Participants", "participants"),
+    ("Show Day Capture",  "capture"),
     ("Results",           "results"),
     ("Special Winners",   "special"),
     ("Special Prizes",    "special_list"),
@@ -169,6 +170,7 @@ class MainWindow(ctk.CTk):
         from views.setup_view import SetupView
         from views.exhibitors_view import ExhibitorsView
         from views.show_participants_view import ShowParticipantsView
+        from views.show_day_capture_view import ShowDayCaptureView
         from views.results_view import ResultsView
         from views.special_view import SpecialView
         from views.special_list_view import SpecialListView
@@ -191,6 +193,7 @@ class MainWindow(ctk.CTk):
             "setup":         SetupView,
             "exhibitors":    ExhibitorsView,
             "participants":  ShowParticipantsView,
+            "capture":       ShowDayCaptureView,
             "results":       ResultsView,
             "special":       SpecialView,
             "special_list":  SpecialListView,

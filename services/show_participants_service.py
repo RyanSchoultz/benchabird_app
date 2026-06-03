@@ -102,10 +102,12 @@ def assign_exh_no(exhibitor_id: int, exh_no: int) -> None:
     exhibitor.save()
 
 
-def get_unenrolled_exhibitors(query: str = "") -> list[Exhibitor]:
-    """All exhibitors with no ExhNo assigned, optionally filtered by name."""
+def get_unenrolled_exhibitors(query: str = "", flagged_only: bool = False) -> list[Exhibitor]:
+    """All exhibitors with no ExhNo assigned, optionally filtered by name or entrant flag."""
     q = (query or "").strip()
     base = Exhibitor.select().where(Exhibitor.exh_no.is_null(True))
+    if flagged_only:
+        base = base.where(Exhibitor.is_entrant == True)
     if q:
         base = base.where(Exhibitor.name.contains(q))
     return list(base.order_by(Exhibitor.name))

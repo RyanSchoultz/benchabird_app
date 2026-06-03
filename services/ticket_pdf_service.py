@@ -65,14 +65,16 @@ def _make_qr_reader(ticket: dict):
 
 
 def generate_ticket_pdf(tickets: list, show_name: str = "Bird Show",
-                        logo_data: bytes = None) -> bytes:
+                        logo_data: bytes = None,
+                        barcode_type: str = "QR") -> bytes:
     """
     Generate an A4 PDF of cage tickets.
 
     Args:
-        tickets:    list of dicts with keys ticket_no, auto_num, exh_no, name, class_code
-        show_name:  printed at the bottom of each ticket
-        logo_data:  raw PNG/JPG bytes for the club-logo watermark (optional)
+        tickets:      list of dicts with keys ticket_no, auto_num, exh_no, class_code, class_desc
+        show_name:    printed at the bottom of each ticket
+        logo_data:    raw PNG/JPG bytes for the club-logo watermark (optional)
+        barcode_type: "QR", "1D", or "None"
     """
     buf = io.BytesIO()
     page_w, page_h = A4
@@ -98,7 +100,7 @@ def generate_ticket_pdf(tickets: list, show_name: str = "Bird Show",
         x = MARGIN + col * ticket_w
         y = page_h - MARGIN - (row + 1) * ticket_h
 
-        _draw_ticket(c, x, y, ticket_w, ticket_h, ticket, show_name, logo_reader)
+        _draw_ticket(c, x, y, ticket_w, ticket_h, ticket, show_name, logo_reader, barcode_type)
 
     if not tickets:
         c.setFont("Helvetica", 10)
@@ -110,7 +112,7 @@ def generate_ticket_pdf(tickets: list, show_name: str = "Bird Show",
 
 def _draw_ticket(c, x: float, y: float, w: float, h: float,
                  ticket: dict, show_name: str,
-                 logo_reader=None) -> None:
+                 logo_reader=None, barcode_type: str = "QR") -> None:
     """Draw a single ticket cell at (x, y) with dimensions (w × h)."""
     pad = 3 * mm
     qr_size = 19 * mm
@@ -127,14 +129,28 @@ def _draw_ticket(c, x: float, y: float, w: float, h: float,
         wy = y + (h - wm_h) / 2
         c.drawImage(reader, wx, wy, width=wm_w, height=wm_h)
 
-    # ── QR code — top-right corner ───────────────────────────────
-    try:
-        qr_img = _make_qr_reader(ticket)
-        c.drawImage(qr_img, x + w - qr_size - pad,
-                    y + h - qr_size - pad,
-                    width=qr_size, height=qr_size, mask='auto')
-    except Exception:
-        pass
+    # ── Barcode — top-right corner ───────────────────────────────
+    if barcode_type == "QR":
+        try:
+            qr_img = _make_qr_reader(ticket)
+            c.drawImage(qr_img, x + w - qr_size - pad,
+                        y + h - qr_size - pad,
+                        width=qr_size, height=qr_size, mask='auto')
+        except Exception:
+            pass
+    elif barcode_type == "1D":
+        try:
+            from reportlab.graphics.barcode.code128 import Code128
+            bc = Code128(
+                f"{ticket['ticket_no']:03d}",
+                barHeight=10 * mm, barWidth=0.5 * mm,
+                humanReadable=False,
+            )
+            bc_x = x + w - bc.width - pad
+            bc_y = y + h - 13 * mm - pad
+            bc.drawOn(c, bc_x, bc_y)
+        except Exception:
+            pass
 
     # ── Ticket number — large and prominent ──────────────────────
     c.setFont("Helvetica-Bold", 20)
@@ -149,9 +165,9 @@ def _draw_ticket(c, x: float, y: float, w: float, h: float,
     c.setFont("Helvetica", 9)
     c.drawString(x + pad, y + h - 21 * mm, f"ExhNo: {ticket['exh_no'] or ''}")
 
-    # ── Exhibitor name ───────────────────────────────────────────
-    name = (ticket['name'] or '')[:28]
-    c.drawString(x + pad, y + h - 26 * mm, name)
+    # ── Class description ────────────────────────────────────────
+    class_desc = (ticket.get('class_desc') or '')[:28]
+    c.drawString(x + pad, y + h - 26 * mm, class_desc)
 
     # ── Show name — small italic at bottom ───────────────────────
     c.setFont("Helvetica-Oblique", 7)

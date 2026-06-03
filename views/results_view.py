@@ -11,6 +11,7 @@ from views._paginated_table import PaginatedTable
 from views._webcam_scanner_dialog import WebcamScannerDialog
 from views._mobile_scanner_dialog import MobileScannerDialog
 from views._judge_mode_dialog import JudgeModeDialog
+from views._judging_capture_dialog import JudgingCaptureDialog
 
 _repo = ResultsRepo()
 
@@ -41,9 +42,9 @@ class ResultsView(ctk.CTkFrame):
         ctk.CTkButton(toolbar, text="Clear All Results",
                       fg_color=("gray80", "gray30"), text_color=("gray10", "gray90"),
                       command=self._clear_all).pack(side="right", padx=(4, 4))
-        ctk.CTkButton(toolbar, text="Judge Mode",
+        ctk.CTkButton(toolbar, text="Judging Capture",
                       fg_color=("gray80", "gray30"), text_color=("gray10", "gray90"),
-                      command=self._open_judge_mode).pack(side="right", padx=(4, 4))
+                      command=self._open_judging_capture).pack(side="right", padx=(4, 4))
 
         # ── Quick entry form ─────────────────────────────────────────
         form = ctk.CTkFrame(self, fg_color=("gray88", "gray20"), corner_radius=8)
@@ -194,6 +195,9 @@ class ResultsView(ctk.CTkFrame):
 
     def _open_judge_mode(self):
         JudgeModeDialog(self, on_changed=self._reload_table)
+
+    def _open_judging_capture(self):
+        JudgingCaptureDialog(self, on_saved=self._reload_table)
 
     def _save_result(self):
         exhibit_no = self._parse_exhibit_entry()

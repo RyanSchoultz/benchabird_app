@@ -13,6 +13,7 @@ from models.special import SpecialList, SpecialWinner
 from models.reference import (
     ShowDetails, HallOfFame, TicketNumber, BrochureSequence, NotesBrochure
 )
+from services.class_glossary_service import seed_class_glossary
 
 
 def import_from_mdb(progress=None, mdb_path=None) -> dict:
@@ -41,6 +42,7 @@ def import_from_mdb(progress=None, mdb_path=None) -> dict:
             out['ticket_numbers']  = _ticket_numbers(conn, progress)
             out['brochure_seq']    = _brochure_seq(conn, progress)
             out['notes_brochure']  = _notes_brochure(conn, progress)
+            out['class_glossary']   = seed_class_glossary()
     finally:
         conn.close()
     return out

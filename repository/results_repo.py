@@ -45,5 +45,8 @@ class ResultsRepo:
         obj.save()
         return obj
 
+    def clear_special_winner(self, special_nr: str) -> None:
+        SpecialWinner.delete().where(SpecialWinner.special_nr == special_nr).execute()
+
     def get_special_lists(self) -> list:
         return list(SpecialList.select().order_by(SpecialList.special_nr))

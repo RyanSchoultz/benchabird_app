@@ -128,7 +128,7 @@ class WelcomeView(ctk.CTkFrame):
         stats = [
             (str(n_exhibitors), "Exhibitors",  "registered"),
             (str(n_entries),    "Entries",     "show entries"),
-            (str(n_calc),       "Calculated",  "assigned tickets"),
+            (str(n_calc),       "Benched",     "checked in"),
             (f"{result_pct}%",  "Results",     f"{n_results + n_nb} of {n_calc}"),
         ]
 
@@ -163,7 +163,6 @@ class WelcomeView(ctk.CTkFrame):
         n_calc = CalculatedEntry.select().count()
         n_results = Result.select().where(Result.result.is_null(False)).count()
         n_nb = NotBenched.select().count()
-        calc_sync = n_calc == n_entries and n_entries > 0
         results_done = (n_results + n_nb) >= n_calc and n_calc > 0
 
         steps = [
@@ -189,11 +188,11 @@ class WelcomeView(ctk.CTkFrame):
                 "entries",
             ),
             (
-                calc_sync,
+                n_calc > 0,
                 "4",
-                "Calculate",
-                f"{n_calc} ticket numbers assigned" if n_calc > 0 else "Run Calculate in Entries view",
-                "entries",
+                "Check-in / Benching",
+                f"{n_calc} birds benched" if n_calc > 0 else "Bench arrivals and allocate exhibit numbers",
+                "participants",
             ),
             (
                 n_calc > 0,
@@ -205,9 +204,9 @@ class WelcomeView(ctk.CTkFrame):
             (
                 results_done,
                 "6",
-                "Enter Results",
-                f"{n_results + n_nb} of {n_calc} results recorded" if n_calc > 0 else "Record judging placings",
-                "results",
+                "Show Day Capture",
+                f"{n_results + n_nb} of {n_calc} results recorded" if n_calc > 0 else "Capture judging sheets",
+                "capture",
             ),
             (
                 results_done,
@@ -307,6 +306,7 @@ class WelcomeView(ctk.CTkFrame):
 
         tips = [
             ("Ctrl+F", "Global search — find exhibitors, classes, entries instantly"),
+            ("Ctrl+B", "Jump straight to Check-in / Benching"),
             ("Ctrl+E", "Jump straight to Entries"),
             ("Ctrl+R", "Jump straight to Results"),
             ("Ctrl+T", "Jump straight to Tickets"),

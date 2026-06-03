@@ -1,4 +1,4 @@
-# views/help_view.py
+﻿# views/help_view.py
 """In-app how-to guide — tabbed reference for all major workflows."""
 import sys
 import threading
@@ -20,7 +20,7 @@ SECTIONS = {
             "class definitions, special prizes, Hall of Fame records, and brochure "
             "notes from the MDB file. The log shows progress for each table.\n\n"
             "If you want to start from scratch, skip the import wizard and add your "
-            "data directly through the Exhibitors and Entries views."
+            "data directly through the Exhibitors and Show Participants views."
         )),
         ("Sidebar Navigation", (
             "Use the left sidebar to move between sections.\n\n"
@@ -30,9 +30,10 @@ SECTIONS = {
             "  Show Setup         — show name, date, club, logo, ticket barcode type\n"
             "  Exhibitors         — browse and manage the master exhibitor registry (Ctrl+X)\n"
             "  Show Participants  — entries, benching, and late entries in one view (Ctrl+B / Ctrl+E)\n"
-            "  Results            — enter and review judging results (Ctrl+R)\n"
-            "  Special Winners    — assign special prize winners\n"
-            "  Special Prizes     — manage the prize list\n"
+            "  Show Day Capture  — capture judging sheets, specials, validation, and final outputs\n"
+            "  Results            — fallback rapid entry and scanner corrections (Ctrl+R)\n"
+            "  Special Winners    — fallback special-winner assignment\n"
+            "  Special Prizes     — setup/reference prize list\n"
             "  Tickets            — print cage tickets (Ctrl+T)\n"
             "  Reports            — generate PDF reports\n"
             "  Hall of Fame       — historical records (read-only)\n"
@@ -53,10 +54,9 @@ SECTIONS = {
             "   Late entries and corrections are handled in the same view\n"
             "5. Tickets — print cage tickets for exhibitors to attach to cages\n"
             "6. Reports — print the Judges Catalogue for judges to complete by hand\n"
-            "7. Results — use Judging Capture to enter completed sheets by category\n"
-            "8. Special Winners — assign special prize winners by exhibit number\n"
-            "9. Reports — generate Results Sheet, Show Catalogue, Prize Money, etc.\n"
-            "10. Archive (optional) — save a snapshot before resetting for next season\n\n"
+            "7. Show Day Capture — capture completed Judges Catalogue sheets, assign specials, validate, and publish\n"
+            "8. Reports — generate any remaining Results Sheet, Show Catalogue, Prize Money, etc.\n"
+            "9. Archive (optional) — save a snapshot before resetting for next season\n\n"
             "Entries and exhibitors can be added at any time. Show Participants handles "
             "pre-show entries, show-day benching, and late entries all in one place."
         )),
@@ -65,7 +65,7 @@ SECTIONS = {
             "  Ctrl+F   — Search\n"
             "  Ctrl+B   — Show Participants\n"
             "  Ctrl+E   — Show Participants\n"
-            "  Ctrl+R   — Results\n"
+            "  Ctrl+R   — Results fallback screen\n"
             "  Ctrl+T   — Tickets\n"
             "  Ctrl+X   — Exhibitors\n"
             "  Ctrl+H   — Help (this view)\n\n"
@@ -128,7 +128,8 @@ SECTIONS = {
             "  • Click Edit to open the edit dialog — make changes and click Save\n"
             "  • Click Delete to permanently remove the exhibitor\n\n"
             "Deleting an exhibitor does not automatically remove their entries. "
-            "Use Bulk Edit in the Entries view to delete entries by exhibitor number."
+            "Use Show Participants or the SQL Editor to clean up any remaining "
+            "show entries for that exhibitor."
         )),
         ("Address Labels", (
             "The Address Tags report prints mailing labels only for exhibitors whose "
@@ -139,13 +140,21 @@ SECTIONS = {
             "2. Click Toggle Labels in the toolbar\n\n"
             "You can also tick the checkbox when adding or editing an exhibitor."
         )),
+        ("Entrants", (
+            "Use the Entrant flag to mark exhibitors who are expected to participate in "
+            "the current show.\n\n"
+            "The Entrant column shows a check mark for flagged exhibitors. Select a row "
+            "and click Toggle Entrant to flip the flag.\n\n"
+            "When you bulk-enrol exhibitors into Show Participants, the enrol dialog now "
+            "shows only flagged entrants who do not already have an exhibitor number."
+        )),
         ("Searching and Exporting", (
             "Search: type in the search box at the right of the toolbar. The table "
             "filters live as you type, matching on name and email.\n\n"
             "Export: click Export to save the current filtered list to a file. "
             "A save dialog lets you choose CSV (.csv) or Excel (.xlsx). "
             "The exported file includes all columns: exhibitor number, name, address, "
-            "suburb, town, zip, phone, cell, email, club, and label flag."
+            "suburb, town, zip, phone, cell, email, club, label flag, and entrant flag."
         )),
     ],
 
@@ -207,9 +216,28 @@ SECTIONS = {
         )),
     ],
 
+    "Show Day Capture": [
+        ("Overview", (
+            "Show Day Capture is the primary show-day result workflow. Use it after "
+            "judges complete the printed Judges Catalogue sheets.\n\n"
+            "Judging Capture is built from benched birds with exhibit numbers. If no "
+            "categories appear, go to Show Participants first and bench the arrived birds.\n\n"
+            "The workspace has four stages: Judging Capture, Special Winners, "
+            "Validation, and Publish. Results and Special Winners remain available "
+            "as fallback screens during rollout."
+        )),
+        ("Recommended Flow", (
+            "1. Open Judging Capture and save each completed category/page\n"
+            "2. Assign Special Winners from captured exhibit numbers\n"
+            "3. Review Validation for missing results, duplicate placings, and special-winner issues\n"
+            "4. Use Publish to generate marked catalogue, results, specials, prize money, and exhibitor result reports"
+        )),
+    ],
+
     "Results": [
         ("Rapid Entry Mode", (
-            "The Results view is designed for fast entry during judging:\n\n"
+            "The Results view remains available as a fallback for rapid-entry corrections, scanner entry, "
+            "and Not Benched changes:\n\n"
             "1. Type the exhibit number in the Exhibit # field\n"
             "2. Press Enter — focus moves to the Result dropdown\n"
             "3. Select the result (1st, 2nd, 3rd, 4th, 5th, BOB, R/U BOB, Champion, Reserve)\n"
@@ -222,10 +250,11 @@ SECTIONS = {
             "If an exhibit already has a result, it is updated with the new value."
         )),
         ("Judging Capture", (
-            "Judging Capture is for entering completed paper Judges Catalogue sheets after judging.\n\n"
+            "Judging Capture is now primarily handled inside Show Day Capture. "
+            "This Results shortcut remains available as a fallback during rollout.\n\n"
             "1. Go to Reports and print the Judges Catalogue\n"
             "2. Give the sheets to the judges to complete by hand\n"
-            "3. Open Results and click Judging Capture\n"
+            "3. Open Show Day Capture and use the Judging Capture stage\n"
             "4. Select the category from the dropdown\n"
             "5. If needed, change the exhibit's class before saving\n"
             "6. For each exhibit, choose a placing, NB, or Clear using the radio buttons\n"
@@ -286,7 +315,7 @@ SECTIONS = {
 
     "Tickets & Reports": [
         ("Printing Cage Tickets", (
-            "Before printing, use Check-in to bench arrived birds and allocate exhibit numbers.\n\n"
+            "Before printing, use Show Participants to bench arrived birds and allocate exhibit numbers.\n\n"
             "1. Navigate to Tickets\n"
             "2. The table shows all assigned tickets with exhibitor details\n"
             "3. Use the filter bar to check specific exhibitors\n"
@@ -303,6 +332,7 @@ SECTIONS = {
         )),
         ("Generating PDF Reports", (
             "Click any report button in the Reports view to generate it:\n\n"
+            "  Entries Submitted - pre-show summary from submitted entries\n"
             "  Entries Received  — all benched entries in exhibit-number order\n"
             "  Show Catalogue    — entries grouped by class with section headers\n"
             "  4.1 Judges Catalogue  - printable judging sheet with placing and NB boxes\n"
@@ -328,7 +358,7 @@ SECTIONS = {
             "3. Search by exhibitor name, exhibitor number, exhibit number, email, or club\n"
             "4. Select the exhibitor and choose the bundle sections\n"
             "5. Preview, print, or save the generated PDF\n\n"
-            "Bundles can include exhibitor details, entries, cage tickets after Check-in, late entries, "
+            "Bundles can include exhibitor details, entries, cage tickets after benching, late entries, "
             "results when recorded, and an address label when the exhibitor is flagged for labels. "
             "If an exhibitor number is not assigned, the bundle still uses the selected exhibitor row and "
             "matches calculated or late entries by exhibitor name."
@@ -483,7 +513,7 @@ SECTIONS = {
         ("Key Tables", (
             "show_details       — show name, date, club, logo bytes\n"
             "exhibitor          — all exhibitors\n"
-            "show_entry         — raw pre-show entries before Check-in\n"
+            "show_entry         — raw pre-show entries before benching\n"
             "calculated_entry   — benched birds with allocated exhibit numbers\n"
             "late_entry         — late entries\n"
             "result             — judging results\n"
@@ -637,3 +667,4 @@ class HelpView(ctk.CTkFrame):
     def _update_check_error(self, message: str):
         self._update_status.configure(text=f"Update check failed: {message[:80]}")
         messagebox.showerror("Benchabird Updates", message)
+

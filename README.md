@@ -1,4 +1,4 @@
-# Benchabird
+﻿# Benchabird
 
 Benchabird is an open-source, offline-first bird show management system designed to help clubs manage exhibitors, entries, cage ticket numbers, judging results, special winners, reports, and show archives.
 
@@ -51,9 +51,10 @@ Benchabird aims to provide a cleaner, more approachable tool for managing the fu
 | **Search** | Global search across exhibitors, entries, results, and special winners. Per-view filter bars on every table, with a short debounce while typing |
 | **Exhibitors** | Full CRUD with live search. Toggle address-label inclusion per exhibitor. Import from CSV/Excel. Export filtered list to CSV or Excel |
 | **Show Participants** | Unified show-day and pre-show workflow. Left panel: live participant list with All / Unbenched / Late filter chips, registry search, and inline ExhNo assignment. Right panel: per-exhibitor entries with bench status, add regular or late entries, bench/unbench selected birds. Auto-calculate runs silently pre-show and surfaces a manual control once benching starts |
-| **Results** | Rapid-entry mode plus Judging Capture for entering completed paper Judges Catalogue sheets by category. Supports manual entry, USB scanners, desktop webcam QR scanning, and local mobile companion lookup/save. Mark Not Benched. Export to CSV or Excel |
-| **Special Winners** | Assign special prize winners by exhibit number |
-| **Special Prizes** | Manage the prize list: description, trophy type, cash amounts |
+| **Show Day Capture** | Unified show-day result workflow: Judging Capture, Special Winners, Validation, and Publish stages for completed paper Judges Catalogue sheets |
+| **Results** | Temporary fallback rapid-entry screen for manual result corrections, scanner entry, and Not Benched changes |
+| **Special Winners** | Temporary fallback assignment screen for special prize winners by exhibit number |
+| **Special Prizes** | Setup/reference screen for the prize list: description, trophy type, cash amounts |
 | **Tickets** | Preview and print cage tickets as PDF. Each ticket has exhibit #, class, class description, QR code or 1D barcode (configurable in Show Setup), and club logo watermark |
 | **Reports** | PDF reports including Access catalogue items 4.1-4.4, Judges Catalogue sheets, marked catalogue, and exhibitor bundles with in-app preview, page navigation, Print button, and Save As |
 | **Hall of Fame** | Historical champion records (read-only) |
@@ -122,14 +123,13 @@ You remain responsible for backing up your own show database files. The Archives
 Typical order of operations for running a show:
 
 1. **Show Setup** — enter show name, date, club details, upload club logo, set ticket barcode type
-2. **Exhibitors** — add all registered exhibitors (or import from CSV/Excel)
+2. **Exhibitors** — add all registered exhibitors (or import from CSV/Excel) and flag active entrants
 3. **Show Participants** — add each exhibitor's class entries before the show; on show day, search arriving exhibitors and bench only the birds present; exhibit numbers are allocated here; late entries are added in the same flow
 4. **Tickets** — print cage tickets for benched birds; exhibitors attach them to cages
-6. **Reports** — print the Judges Catalogue for judges to complete by hand
-7. **Results** — use Judging Capture to enter completed sheets by category, or rapid entry for corrections
-8. **Special Winners** — assign special prize winners by exhibit number
-9. **Reports** — generate Results Sheet, Show Catalogue, Prize Money, Address Tags, etc.
-10. **Archive** (optional) — save a snapshot before resetting for next season
+5. **Reports** — print the Judges Catalogue for judges to complete by hand
+6. **Show Day Capture** — capture completed Judges Catalogue sheets, assign special winners, review validation, and publish final outputs
+7. **Reports** — generate any remaining Results Sheet, Show Catalogue, Prize Money, Address Tags, etc.
+8. **Archive** (optional) — save a snapshot before resetting for next season
 
 ---
 
@@ -159,6 +159,8 @@ Typical order of operations for running a show:
 **Editing / Deleting:** select a row, then click `Edit` or `Delete`.
 
 **Address Labels:** the `Labels` column shows a ✓ for exhibitors included in the label print run. Use `Toggle Labels` to flip the setting for the selected row, or tick the checkbox in the Edit dialog.
+
+**Entrants:** the `Entrant` column shows a ✓ for exhibitors flagged as active entrants for the current show. Use `Toggle Entrant` to flip the flag for the selected row. The Show Participants enrol dialog only offers flagged entrants who do not yet have an exhibitor number.
 
 **Search:** type in the search box in the toolbar — the table filters live as you type.
 
@@ -198,7 +200,31 @@ If any entry references an ExhNo with no matching exhibitor, a warning banner ap
 
 ---
 
+### Show Day Capture
+
+Use **Show Day Capture** after judges complete the printed Judges Catalogue sheets.
+
+Judging Capture is built from benched birds with exhibit numbers. If no categories appear, go to **Show Participants** first and bench the arrived birds.
+
+The workspace has four stages:
+- **Judging Capture** — save each completed category/page, including placings, NB marks, and class reallocations
+- **Special Winners** — assign special prize winners by exhibit number
+- **Validation** — review missing results, duplicate placings, and special-winner issues before publishing
+- **Publish** — generate marked catalogue, results sheet, special winners, prize money, and exhibitor results reports
+
+The older Results and Special Winners screens remain available as fallback tools during rollout.
+
+**Recommended flow:**
+1. Open **Judging Capture** and save each completed category/page
+2. Use **Special Winners** to assign awards from captured exhibit numbers
+3. Review **Validation** for missing results, duplicate placings, and special-winner issues
+4. Use **Publish** to generate marked catalogue, results, specials, prize money, and exhibitor result reports
+
+---
+
 ### Results
+
+Results is currently a fallback screen for rapid-entry corrections, scanner entry, and Not Benched changes.
 
 **Rapid entry flow:**
 1. Type the exhibit number in `Exhibit #` and press **Enter** — focus moves to the Result dropdown
@@ -214,7 +240,7 @@ If any entry references an ExhNo with no matching exhibitor, a warning banner ap
 
 **Judging Capture:**
 - Print the Judges Catalogue PDF from Reports before judging
-- After judges complete the sheets, click `Judging Capture`
+- After judges complete the sheets, open **Show Day Capture → Judging Capture**
 - Select a category, correct the class if the judge sheet shows a reallocation, choose radio-button results or NB/Clear per exhibit, then click `Save Category Results`
 - Rapid entry remains available for corrections and ad hoc capture
 
@@ -232,6 +258,8 @@ If any entry references an ExhNo with no matching exhibitor, a warning banner ap
 ---
 
 ### Special Winners
+
+Special Winners is currently a fallback assignment screen. The preferred live-show workflow is **Show Day Capture → Special Winners**, where assignments sit alongside validation and publishing.
 
 1. Browse the special prize list — each row shows the prize, description, and current winner (if assigned)
 2. Click `Assign` on a row to open the assignment dialog
@@ -266,6 +294,7 @@ Click any report button to generate and preview it:
 
 | Report | Contents |
 |---|---|
+| Entries Submitted | Pre-show summary from raw submitted entries: summary, by class, and by exhibitor |
 | Entries Received | All benched entries in exhibit-number order |
 | Show Catalogue | Entries grouped by class with section headers |
 | 4.1 Judges Catalogue | Printable judging sheet grouped by category, main class, and class, with placing/NB boxes |
@@ -345,7 +374,7 @@ For users who need direct database access.
 |---|---|
 | `show_details` | Show name, date, club info, logo data |
 | `exhibitor` | All exhibitors |
-| `show_entry` | Raw pre-show entries before Check-in |
+| `show_entry` | Raw pre-show entries before benching |
 | `calculated_entry` | Benched birds with allocated exhibit numbers |
 | `late_entry` | Late entries |
 | `result` | Judging results |
@@ -376,6 +405,7 @@ Re-imports from a legacy Access MDB file. Overwrites exhibitors, classes, Hall o
 
 | Report | Default filename | Description |
 |---|---|---|
+| Entries Submitted | `benchabird_entries_submitted.pdf` | Pre-show summary from submitted entries by class and exhibitor |
 | Entries Received | `benchabird_entries_received.pdf` | All benched entries, exhibit-number order |
 | Show Catalogue | `benchabird_show_catalogue.pdf` | Class-grouped with section headers |
 | 4.1 Judges Catalogue | `benchabird_4_1_judges_catalogue.pdf` | Printable judging sheet for handwritten placings and NB marks |
@@ -400,7 +430,7 @@ Re-imports from a legacy Access MDB file. Overwrites exhibitors, classes, Hall o
 | `Ctrl+F` | Navigate to Search |
 | `Ctrl+B` | Navigate to Show Participants |
 | `Ctrl+E` | Navigate to Show Participants |
-| `Ctrl+R` | Navigate to Results |
+| `Ctrl+R` | Navigate to Results fallback screen |
 | `Ctrl+T` | Navigate to Tickets |
 | `Ctrl+X` | Navigate to Exhibitors |
 | `Ctrl+H` | Navigate to Help |
@@ -575,3 +605,4 @@ SQLite via Peewee ORM. Schema migrations run silently on startup via `ALTER TABL
 | `pyodbc` | ≥ 5.0 | Legacy Access MDB import |
 | `pyinstaller` | ≥ 6.0 | Single-file Windows executable packaging |
 | `pytest` | ≥ 8.0 | Test suite |
+

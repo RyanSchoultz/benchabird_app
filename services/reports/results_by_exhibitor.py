@@ -51,7 +51,7 @@ def generate_results_by_exhibitor(sd=None) -> bytes:
 
     if CalculatedEntry.select().count() == 0:
         return _draw_empty_pdf(
-            "No calculated entries found. Run Calculate before generating this report.",
+            "No benched birds found. Use Show Participants before generating this report.",
             sd,
         )
 

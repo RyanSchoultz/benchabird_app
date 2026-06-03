@@ -36,6 +36,9 @@ class ExhibitorsView(ctk.CTkFrame):
         ctk.CTkButton(toolbar, text="Toggle Labels", width=110,
                       fg_color=("gray80", "gray30"), text_color=("gray10", "gray90"),
                       command=self._toggle_labels).pack(side="right", padx=4)
+        ctk.CTkButton(toolbar, text="Toggle Entrant", width=120,
+                      fg_color=("gray80", "gray30"), text_color=("gray10", "gray90"),
+                      command=self._toggle_entrant).pack(side="right", padx=4)
         ctk.CTkButton(toolbar, text="Export", width=80,
                       fg_color=("gray80", "gray30"), text_color=("gray10", "gray90"),
                       command=self._export).pack(side="right", padx=4)
@@ -50,8 +53,8 @@ class ExhibitorsView(ctk.CTkFrame):
 
         self._table = PaginatedTable(
             self,
-            headers=["Exh #", "Name", "Town", "Phone", "Email", "Labels"],
-            col_weights=[1, 2, 1, 1, 2, 1],
+            headers=["Exh #", "Name", "Town", "Phone", "Email", "Labels", "Entrant"],
+            col_weights=[1, 2, 1, 1, 2, 1, 1],
             on_select=self._select,
         )
         self._table.grid(row=1, column=0, sticky="nsew", padx=16, pady=(4, 16))
@@ -64,6 +67,7 @@ class ExhibitorsView(ctk.CTkFrame):
                 str(e.exh_no or ""), e.name or "", e.town or "",
                 e.tel_home or e.cell_no or "", e.email or "",
                 "✓" if e.print_address else "",
+                "✓" if e.is_entrant else "",
             ])
             for e in exhibitors
         ]
@@ -93,17 +97,27 @@ class ExhibitorsView(ctk.CTkFrame):
             _repo.update(exhibitor, print_address=not exhibitor.print_address)
         self._load()
 
+    def _toggle_entrant(self):
+        if not self._selected_pk:
+            return
+        exhibitor = _repo.get_by_id(self._selected_pk)
+        if exhibitor:
+            _repo.update(exhibitor, is_entrant=not exhibitor.is_entrant)
+        self._load()
+
     def _export(self):
         from services.export_service import export_data
         exhibitors = search(self._search_var.get())
         rows = [
             [str(e.exh_no or ""), e.name or "", e.address or "", e.suburb or "",
              e.town or "", e.zip_code or "", e.tel_home or "", e.cell_no or "",
-             e.email or "", e.club or "", "Yes" if e.print_address else "No"]
+             e.email or "", e.club or "",
+             "Yes" if e.print_address else "No",
+             "Yes" if e.is_entrant else "No"]
             for e in exhibitors
         ]
         headers = ["ExhNo", "Name", "Address", "Suburb", "Town", "ZipCode",
-                   "TelHome", "Cell", "Email", "Club", "PrintAddress"]
+                   "TelHome", "Cell", "Email", "Club", "PrintAddress", "IsEntrant"]
         export_data(rows, headers, "exhibitors.csv")
 
     def _import_spreadsheet(self):
