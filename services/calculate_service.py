@@ -43,3 +43,33 @@ def calculate_entries() -> int:
         for i in range(0, len(rows), 200):
             CalculatedEntry.insert_many(rows[i:i+200]).execute()
     return len(rows)
+
+
+def _benching_started() -> bool:
+    """True if any CalculatedEntry was created via individual check-in (not full Calculate)."""
+    return CalculatedEntry.select().where(
+        CalculatedEntry.source_entry_auto_num.is_null(False)
+    ).exists()
+
+
+def _results_recorded() -> bool:
+    """True if any result has been recorded — show is in progress or complete."""
+    from models.results import Result
+    return Result.select().where(Result.result.is_null(False)).exists()
+
+
+def auto_calculate_if_safe() -> str:
+    """
+    Run calculate_entries() if safe to do so silently.
+
+    Returns:
+        "done"    — ran successfully
+        "warning" — benching started; caller should show manual recalculate notice
+        "blocked" — results recorded; recalculate is not permitted
+    """
+    if _results_recorded():
+        return "blocked"
+    if _benching_started():
+        return "warning"
+    calculate_entries()
+    return "done"
