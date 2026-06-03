@@ -21,7 +21,10 @@ def reset_show_data() -> dict:
             'results':         Result.delete().execute(),
             'not_benched':     NotBenched.delete().execute(),
             'special_winners': SpecialWinner.delete().execute(),
-            'exh_nos_cleared': Exhibitor.update(exh_no=None).where(
+            'exh_nos_cleared':  Exhibitor.update(exh_no=None).where(
                 Exhibitor.exh_no.is_null(False)
+            ).execute(),
+            'entrants_cleared': Exhibitor.update(is_entrant=False).where(
+                Exhibitor.is_entrant == True
             ).execute(),
         }

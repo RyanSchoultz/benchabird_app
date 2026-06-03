@@ -47,9 +47,25 @@ def test_reset_returns_counts(test_db):
     assert counts['entries'] == 1
     assert counts['results'] == 1
     assert counts['exh_nos_cleared'] == 1
-    assert set(counts.keys()) == {'entries', 'calculated', 'late_entries', 'results', 'not_benched', 'special_winners', 'exh_nos_cleared'}
+    assert set(counts.keys()) == {'entries', 'calculated', 'late_entries', 'results', 'not_benched', 'special_winners', 'exh_nos_cleared', 'entrants_cleared'}
 
 
 def test_reset_on_empty_db_is_noop(test_db):
     counts = reset_show_data()
     assert sum(counts.values()) == 0
+
+
+def test_reset_clears_is_entrant(test_db):
+    Exhibitor.create(name="Flagged Person", is_entrant=True)
+    Exhibitor.create(name="Unflagged Person", is_entrant=False)
+    reset_show_data()
+    assert all(not e.is_entrant for e in Exhibitor.select())
+
+
+def test_reset_returns_entrants_cleared_count(test_db):
+    Exhibitor.create(name="A", is_entrant=True)
+    Exhibitor.create(name="B", is_entrant=True)
+    Exhibitor.create(name="C", is_entrant=False)
+    counts = reset_show_data()
+    assert counts['entrants_cleared'] == 2
+    assert 'entrants_cleared' in counts
