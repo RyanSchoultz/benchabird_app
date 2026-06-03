@@ -24,6 +24,7 @@ def _migrate_db():
         "ALTER TABLE calculated_entry ADD COLUMN source_entry_auto_num INTEGER",
         "ALTER TABLE calculated_entry ADD COLUMN source_late_entry_auto_num INTEGER",
         "ALTER TABLE show_details ADD COLUMN barcode_type VARCHAR(10)",
+        "ALTER TABLE exhibitor ADD COLUMN is_entrant BOOLEAN DEFAULT 0",
     ]:
         try:
             database.execute_sql(sql)

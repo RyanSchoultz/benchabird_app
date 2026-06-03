@@ -36,3 +36,11 @@ def test_calculated_entry_has_source_late_entry_auto_num(test_db):
     CalculatedEntry.create(auto_num=1, source_late_entry_auto_num=99, exh_no=5, class_code="SC01")
     row = CalculatedEntry.get(CalculatedEntry.auto_num == 1)
     assert row.source_late_entry_auto_num == 99
+
+def test_exhibitor_has_is_entrant_field(test_db):
+    from models.exhibitor import Exhibitor
+    e = Exhibitor.create(name="Test Person")
+    assert e.is_entrant is False
+    e.is_entrant = True
+    e.save()
+    assert Exhibitor.get_by_id(e.id).is_entrant is True

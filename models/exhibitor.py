@@ -17,6 +17,7 @@ class Exhibitor(BaseModel):
     club = CharField(max_length=50, null=True)
     club1 = CharField(max_length=255, null=True)
     print_address = BooleanField(default=False)
+    is_entrant = BooleanField(default=False)
 
     class Meta:
         table_name = 'exhibitor'
